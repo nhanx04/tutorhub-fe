@@ -1,10 +1,10 @@
-import type { Route } from './+types/home'
-import { Welcome } from '../../src/components'
+import { redirect } from 'react-router'
+import type { LoaderFunctionArgs } from 'react-router'
 
-export function meta({}: Route.MetaArgs) {
-  return [{ title: 'New React Router App' }, { name: 'description', content: 'Welcome to React Router!' }]
+export const loader = async ({}: LoaderFunctionArgs) => {
+  return redirect('/login')
 }
 
 export default function Home() {
-  return <Welcome />
+  return null
 }
