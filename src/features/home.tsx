@@ -1,5 +1,5 @@
 import type { Route } from '../../.react-router/types/app/routes/+types/home'
-import { Welcome } from '../components/welcome'
+import { Welcome } from '../components/common/welcome'
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: 'New React Router App' }, { name: 'description', content: 'Welcome to React Router!' }]
