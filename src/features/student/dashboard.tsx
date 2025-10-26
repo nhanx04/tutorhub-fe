@@ -1,6 +1,6 @@
 import React from 'react'
 import { MainLayout } from 'src/layouts'
-import TutorCard from 'src/components/TutorCard'
+import TutorCard from 'src/components/GroupCard'
 
 export default function DashboardPage() {
   const tutorData = [

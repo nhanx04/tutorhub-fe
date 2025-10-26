@@ -1,4 +1,4 @@
-export { default as Header } from 'src/components/header'
-export { default as Sidebar } from 'src/components/sidebar'
+export { default as Header } from 'src/components/common/header'
+export { default as Sidebar } from 'src/components/common/sidebar'
 
-export { Welcome } from './welcome'
+export { Welcome } from './common/welcome'

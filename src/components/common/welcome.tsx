@@ -1,5 +1,5 @@
-import logoDark from '../asset/logo-dark.svg'
-import logoLight from '../asset/logo-light.svg'
+import logoDark from '../../asset/logo-dark.svg'
+import logoLight from '../../asset/logo-light.svg'
 
 export function Welcome() {
   return (
