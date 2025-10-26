@@ -1,2 +1,1 @@
-// Export layout components here
-// Example: export { MainLayout, AuthLayout } from './MainLayout'
+export { default as MainLayout } from 'src/layouts/main-layout'

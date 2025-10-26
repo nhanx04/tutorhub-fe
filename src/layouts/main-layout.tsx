@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import Sidebar from 'src/components/sidebar'
+import { Sidebar, Header } from 'src/components'
 
 interface MainLayoutProps {
   children: React.ReactNode
@@ -14,6 +14,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
   return (
     <div className='min-h-screen bg-gray-50'>
+      <Header />
       <div className='flex'>
         <Sidebar activeItem={activeMenuItem} onItemClick={handleMenuItemClick} />
         <main className='flex-1 p-6'>{children}</main>
