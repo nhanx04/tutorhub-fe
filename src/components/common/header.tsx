@@ -5,9 +5,11 @@ import { MdArrowDropDown } from 'react-icons/md'
 
 interface HeaderProps {
   title?: string
+  user_name?: string
+  role?: string
 }
 
-const Header: React.FC<HeaderProps> = ({ title = 'Dashboard' }) => {
+const Header: React.FC<HeaderProps> = ({ title = 'Dashboard', user_name = 'User', role = 'Guest' }) => {
   return (
     <header className='bg-white border-b border-gray-200 px-6 py-4'>
       <div className='flex items-center justify-between'>
@@ -31,8 +33,8 @@ const Header: React.FC<HeaderProps> = ({ title = 'Dashboard' }) => {
           </div>
 
           <div className='flex flex-col'>
-            <span className='text-gray-800 text-sm font-medium'>Trong Nhân Nguyễn</span>
-            <span className='text-gray-500 text-xs'>Student</span>
+            <span className='text-gray-800 text-sm font-medium'>{user_name}</span>
+            <span className='text-gray-500 text-xs'>{role}</span>
           </div>
 
           <div className='w-8 h-8 bg-white rounded-full flex items-center justify-center'>

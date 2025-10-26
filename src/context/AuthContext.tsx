@@ -1,16 +1,12 @@
-import React, { createContext, useState, type ReactNode } from 'react'
+import React, { createContext, useState, useEffect, type ReactNode } from 'react'
 import type { User, Credentials } from '../types'
-
-const student: User = {
-  user_id: '2312345',
-  name: 'HCMUT Student',
-  email: 'student@hcmut.edu.vn'
-}
+import { authService } from '../services/authService'
 
 interface AuthContextType {
   user: User | null
   login: (credential: Credentials) => Promise<void>
   logout: () => void
+  isAuthenticated: boolean
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -21,22 +17,42 @@ interface AuthProdivderProps {
 
 export function AuthProvider({ children }: AuthProdivderProps) {
   const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    // Check for token and user data in localStorage on initial load
+    const token = authService.getToken()
+    const storedUser = localStorage.getItem('user')
+    if (token && storedUser) {
+      try {
+        setUser(JSON.parse(storedUser))
+      } catch (error) {
+        console.error('Failed to parse user data from localStorage', error)
+        authService.removeToken() // Clear corrupted data
+        localStorage.removeItem('user')
+      }
+    }
+    setLoading(false)
+  }, [])
 
   const login = async (credential: Credentials) => {
-    console.log('Logging in with: ', credential)
+    // First, get the token from login
+    const loginResponse = await authService.login(credential)
+    authService.setToken(loginResponse.token)
 
-    if (credential.email === 'student@hcmut.edu.vn' && credential.password === 'tutorhub@251') {
-      setUser(student)
-    } else {
-      throw new Error('Sai email hoặc mật khẩu')
-    }
+    // Then, get user info using the token
+    const user = await authService.getCurrentUser()
+    localStorage.setItem('user', JSON.stringify(user)) // Store user data
+    setUser(user)
   }
 
   const logout = () => {
+    authService.removeToken()
+    localStorage.removeItem('user') // Remove user data
     setUser(null)
   }
 
-  const value = { user, login, logout }
+  const value = { user, login, logout, isAuthenticated: !loading && !!user }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>
 }
