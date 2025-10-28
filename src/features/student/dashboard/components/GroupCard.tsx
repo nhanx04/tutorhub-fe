@@ -10,7 +10,7 @@ const GroupCard: React.FC<GroupCardProps> = ({ title, description, tutor, facult
   }
 
   return (
-    <div className='flex flex-col h-full bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow'>
+    <div className='flex flex-col h-full bg-white rounded-lg shadow-sm border border-gray-300 p-6 hover:shadow-md transition-shadow'>
       {/* Active Badge */}
       {isActive && (
         <div className='flex justify-end mb-4'>
