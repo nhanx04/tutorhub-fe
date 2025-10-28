@@ -1,15 +1,8 @@
 import React from 'react'
+import type { GroupCardProps } from 'src/types'
+import { FaRegEye } from 'react-icons/fa'
 
-interface TutorCardProps {
-  title: string
-  description: string
-  tutor: string
-  faculty: string
-  students: number
-  isActive?: boolean
-}
-
-const TutorCard: React.FC<TutorCardProps> = ({ title, description, tutor, faculty, students, isActive = true }) => {
+const GroupCard: React.FC<GroupCardProps> = ({ title, description, tutor, faculty, students, isActive = true }) => {
   return (
     <div className='bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow'>
       {/* Active Badge */}
@@ -40,10 +33,10 @@ const TutorCard: React.FC<TutorCardProps> = ({ title, description, tutor, facult
 
       {/* View Details Button */}
       <button className='w-full py-2 px-4 border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 transition-colors'>
-        👁 View details
+        <FaRegEye className='mr-2 inline-block' /> View details
       </button>
     </div>
   )
 }
 
-export default TutorCard
+export default GroupCard
