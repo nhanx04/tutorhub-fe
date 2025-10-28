@@ -5,7 +5,7 @@ import { groupDetail } from './mockdata/mock-group-infor'
 import { sampleData } from './mockdata/mock-table-data'
 import { consultationColumns, GroupInformation } from './components'
 
-const ConsultationSessionsPage = () => {
+export const ConsultationSessionsPage = () => {
   return (
     <MainLayout>
       <div className='p-6'>
@@ -25,5 +25,3 @@ const ConsultationSessionsPage = () => {
     </MainLayout>
   )
 }
-
-export default ConsultationSessionsPage
