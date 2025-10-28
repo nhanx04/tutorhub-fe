@@ -22,7 +22,7 @@ const ReusableTable = <T extends object>({ columns, data }: TableProps<T>) => {
         <thead>
           <tr className='bg-gray-100 border-b'>
             {columns.map((col, index) => (
-              <th key={index} className='text-left py-3 px-4 font-semibold text-sm' style={{ width: col.width }}>
+              <th key={index} className='text-center py-3 px-4 font-semibold text-sm' style={{ width: col.width }}>
                 {col.header}
               </th>
             ))}
