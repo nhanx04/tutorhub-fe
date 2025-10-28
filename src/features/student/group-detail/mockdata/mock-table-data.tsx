@@ -7,11 +7,7 @@ export const sampleData: ConsultationSession[] = [
     generalDetails: {
       title: 'Tư vấn lộ trình thực hiện nghiên cứu lần 1',
       description: 'Các tài liệu phục vụ cho nghiên cứu:',
-      links: [
-        'https://www.vnulib.edu.vn/index.php/tai-lieu-dien-tu',
-        'https://lib.hcmut.edu.vn/uploads/files/HD%20Dang%20ky%20tai%20khoa%20truy%20cap%20CSDL%20truc%20tuyen.pdf',
-        'https://www.vnulib.edu.vn/index.php/general/36-dich-vu-thu-vien/150-dang-ky-tk-csdl-truc-tuyen'
-      ]
+      links: ['https://www.vnulib.edu.vn/index.php/tai-lieu-dien-tu']
     },
     timeAndLocation: {
       time: '15h - 16h50',
@@ -27,11 +23,7 @@ export const sampleData: ConsultationSession[] = [
     generalDetails: {
       title: 'Tư vấn lộ trình thực hiện nghiên cứu lần 2',
       description: 'Các tài liệu phục vụ cho nghiên cứu:',
-      links: [
-        'https://www.vnulib.edu.vn/index.php/tai-lieu-dien-tu',
-        'https://lib.hcmut.edu.vn/uploads/files/HD%20Dang%20ky%20tai%20khoa%20truy%20cap%20CSDL%20truc%20tuyen.pdf',
-        'https://www.vnulib.edu.vn/index.php/general/36-dich-vu-thu-vien/150-dang-ky-tk-csdl-truc-tuyen'
-      ]
+      links: ['https://www.vnulib.edu.vn/index.php/tai-lieu-dien-tu']
     },
     timeAndLocation: {
       time: '15h - 16h50',

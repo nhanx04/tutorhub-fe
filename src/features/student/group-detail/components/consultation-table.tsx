@@ -53,7 +53,7 @@ export const consultationColumns = [
     width: '20%',
     render: (row: ConsultationSession) => (
       <span
-        className={`px-2 py-1 text-xs font-semibold rounded-full ${
+        className={`px-2 py-1 text-xs font-semibold rounded-full text ${
           row.status === 'Completed' ? 'bg-green-200 text-green-800' : 'bg-yellow-200 text-yellow-800'
         }`}
       >
