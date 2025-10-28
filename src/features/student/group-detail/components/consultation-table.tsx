@@ -1,6 +1,55 @@
+import { useState } from 'react' // Import useState từ React
 import type { ConsultationSession } from 'src/types'
+import { ConfirmDialog } from 'src/components'
 
-export const consultationColumns = [
+function useRegisterConfirmation() {
+  const [isOpen, setIsOpen] = useState(false)
+  const handleRegister = () => {
+    setIsOpen(true)
+  }
+
+  const handleConfirm = () => {
+    setIsOpen(false)
+  }
+  return { isOpen, handleRegister, handleConfirm }
+}
+
+const ActionsCell: React.FC<{ row: ConsultationSession }> = ({ row }) => {
+  const { isOpen, handleRegister, handleConfirm } = useRegisterConfirmation()
+
+  return (
+    <div className='flex flex-col space-y-2'>
+      {row.status === 'Allow Register' ? (
+        <>
+          <button
+            onClick={handleRegister}
+            className='bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 cursor-pointer'
+          >
+            Register
+          </button>
+          <button className='bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 cursor-pointer'>Cancel</button>
+          <ConfirmDialog
+            isOpen={isOpen}
+            onClose={handleConfirm}
+            onConfirm={handleConfirm}
+            title='Register Confirmation'
+          >
+            Are you sure you want to register for this consultation session?
+          </ConfirmDialog>
+        </>
+      ) : (
+        <button className='bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 cursor-pointer'>Feedback</button>
+      )}
+    </div>
+  )
+}
+
+export const consultationColumns: Array<{
+  header: string
+  accessor: keyof ConsultationSession
+  width?: string
+  render?: (row: ConsultationSession) => React.ReactNode
+}> = [
   {
     header: 'Con. ID',
     accessor: 'conId' as keyof ConsultationSession,
@@ -65,17 +114,6 @@ export const consultationColumns = [
     header: 'Actions',
     accessor: 'id' as keyof ConsultationSession, // Dùng id để xác định hành động
     width: '15%',
-    render: (row: ConsultationSession) => (
-      <div className='flex flex-col space-y-2'>
-        {row.status === 'Allow Register' ? (
-          <>
-            <button className='bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600'>Register</button>
-            <button className='bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600'>Cancel</button>
-          </>
-        ) : (
-          <button className='bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600'>Feedback</button>
-        )}
-      </div>
-    )
+    render: (row: ConsultationSession) => <ActionsCell row={row} />
   }
 ]

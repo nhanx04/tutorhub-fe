@@ -1,3 +1,3 @@
 export * from './auth'
 
-export * from './student/group-detail'
+export * from './student'
