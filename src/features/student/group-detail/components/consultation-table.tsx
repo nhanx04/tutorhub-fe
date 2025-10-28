@@ -1,6 +1,6 @@
 import type { ConsultationSession } from 'src/types'
 
-export const columns = [
+export const consultationColumns = [
   {
     header: 'Con. ID',
     accessor: 'conId' as keyof ConsultationSession,
@@ -9,7 +9,7 @@ export const columns = [
   {
     header: 'General Details',
     accessor: 'generalDetails' as keyof ConsultationSession,
-    width: '40%',
+    width: '35%',
     render: (row: ConsultationSession) => (
       <div>
         <p className='font-semibold'>{row.generalDetails.title}</p>
@@ -50,7 +50,7 @@ export const columns = [
   {
     header: 'Status',
     accessor: 'status' as keyof ConsultationSession,
-    width: '15%',
+    width: '20%',
     render: (row: ConsultationSession) => (
       <span
         className={`px-2 py-1 text-xs font-semibold rounded-full ${

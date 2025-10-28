@@ -25,3 +25,15 @@ export interface ConsultationSession {
 
   status: 'Allow Register' | 'Completed'
 }
+
+export interface GroupInformationProps {
+  title: string
+
+  description: string
+
+  tutor: string
+
+  faculty: string
+
+  studentCount: number
+}
