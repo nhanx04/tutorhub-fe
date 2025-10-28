@@ -1,31 +1,41 @@
 import React from 'react'
 import { FaHome, FaUserCog, FaBook } from 'react-icons/fa'
 import logo from '../../asset/images/TutorHub_favicon.png'
+import { useNavigate, useLocation } from 'react-router'
 
-interface SidebarProps {
-  activeItem?: string
-  onItemClick?: (item: string) => void
-}
+// interface SidebarProps {
+//   activeItem?: string
+//   onItemClick?: (item: string) => void
+// }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard', onItemClick }) => {
+const Sidebar: React.FC = () => {
+  const nevigate = useNavigate()
+  const location = useLocation()
+  const currentPath = location.pathname
+  const handleNevigate = (path: string) => {
+    nevigate(path)
+  }
   const menuItems = [
     {
       id: 'dashboard',
       label: 'Dashboard',
       icon: <FaHome />,
-      active: activeItem === 'dashboard'
+      path: '/dashboard',
+      active: currentPath === '/dashboard'
     },
     {
       id: 'profile',
       label: 'Profile',
       icon: <FaUserCog />,
-      active: activeItem === 'profile'
+      path: '/student/profile',
+      active: currentPath === '/student/profile'
     },
     {
       id: 'library',
       label: 'Library',
       icon: <FaBook />,
-      active: activeItem === 'library'
+      path: '/library',
+      active: currentPath === '/library'
     }
   ]
 
@@ -43,7 +53,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard', onItemClick
         {menuItems.map((item) => (
           <button
             key={item.id}
-            onClick={() => onItemClick?.(item.id)}
+            onClick={() => handleNevigate(item.path)}
             className={`w-full flex items-center space-x-3 px-6 py-3 text-left cursor-pointer transition-colors ${
               item.active ? 'bg-blue-800 text-white rounded-md' : 'text-blue-900 hover:bg-blue-100'
             }`}
