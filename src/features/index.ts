@@ -1,1 +1,6 @@
 export { default as Home } from './home'
+export * from './faculty'
+export * from './phong-ctsv'
+export * from './phong-dao-tao'
+export * from './student'
+export * from './tutor'

@@ -36,6 +36,48 @@ const Sidebar: React.FC = () => {
       icon: <FaBook />,
       path: '/library',
       active: currentPath === '/library'
+    },
+    {
+      id: 'student-assessment',
+      label: 'Student Assessment',
+      icon: <FaBook />,
+      path: '/faculty/student-assessment',
+      active: currentPath === '/faculty/student-assessment'
+    },
+    {
+      id: 'student-list',
+      label: 'Student List',
+      icon: <FaBook />,
+      path: '/phong-ctsv/student-list',
+      active: currentPath === '/phong-ctsv/student-list'
+    },
+    {
+      id: 'tutor-list',
+      label: 'Tutor List',
+      icon: <FaBook />,
+      path: '/phong-ctsv/tutor-list',
+      active: currentPath === '/phong-ctsv/tutor-list'
+    },
+    {
+      id: 'pdt-dashboard',
+      label: 'PDT Dashboard',
+      icon: <FaBook />,
+      path: '/phong-dao-tao/dashboard',
+      active: currentPath === '/phong-dao-tao/dashboard'
+    },
+    {
+      id: 'tutor-dashboard',
+      label: 'Tutor Dashboard',
+      icon: <FaBook />,
+      path: '/tutor/dashboard-tutor',
+      active: currentPath === '/tutor/dashboard-tutor'
+    },
+    {
+      id: 'tutor-profile',
+      label: 'Tutor Profile',
+      icon: <FaBook />,
+      path: '/tutor/profile-tutor',
+      active: currentPath === '/tutor/profile-tutor'
     }
   ]
 
