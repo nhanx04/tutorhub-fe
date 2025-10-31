@@ -405,6 +405,3 @@ export const TutorListPage = () => {
         </MainLayout>
     );
 };
-
-// Default export for the file
-export default TutorListPage;
