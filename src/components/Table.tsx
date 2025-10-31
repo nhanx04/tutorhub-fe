@@ -1,16 +1,16 @@
 import React from 'react'
 
 // Định nghĩa kiểu dữ liệu cho mỗi cột
-interface Column<T> {
+export interface Column<T> {
   header: string // Tên cột hiển thị
-  accessor: keyof T // Key để truy cập dữ liệu trong mỗi hàng
+  accessor?: keyof T // Key để truy cập dữ liệu trong mỗi hàng
   width?: string // Độ rộng của cột (ví dụ: '20%')
   // Hàm render tùy chỉnh cho ô, nhận vào toàn bộ object của hàng đó
   render?: (row: T) => React.ReactNode
 }
 
 // Định nghĩa props cho component Table
-interface TableProps<T> {
+export interface TableProps<T> {
   columns: Column<T>[] // Mảng các cột
   data: T[] // Mảng dữ liệu cho các hàng
 }
@@ -33,7 +33,11 @@ const ReusableTable = <T extends object>({ columns, data }: TableProps<T>) => {
             <tr key={rowIndex} className='border-b hover:bg-gray-50'>
               {columns.map((col, colIndex) => (
                 <td key={colIndex} className='py-3 px-4 text-sm'>
-                  {col.render ? col.render(row) : (row[col.accessor] as React.ReactNode)}
+                  {col.render
+                    ? col.render(row)
+                    : col.accessor
+                    ? (row[col.accessor] as React.ReactNode)
+                    : null}
                 </td>
               ))}
             </tr>
