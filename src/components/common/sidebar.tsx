@@ -82,7 +82,7 @@ const Sidebar: React.FC = () => {
   ]
 
   return (
-    <aside className='fixed top-0 w-70 bg-white border-r border-gray-200 min-h-screen flex flex-col'>
+    <aside className='fixed top-0 w-80 bg-white border-r border-gray-200 min-h-screen flex flex-col'>
       {/* Logo + tilte */}
       <div className='flex flex-col items-center py-8 border-b border-gray-200'>
         <img src={logo} alt='HCMUT TutorHub Logo' className='w-16 h-16 mb-3' />

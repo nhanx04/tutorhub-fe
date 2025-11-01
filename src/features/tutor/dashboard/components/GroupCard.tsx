@@ -1,13 +1,12 @@
 import React, { useState } from 'react'
 import type { GroupCardProps } from 'src/types'
-import { FaRegEye } from 'react-icons/fa'
 import { useNavigate } from 'react-router'
-import { GraduationCap } from 'lucide-react'
-import { Building2 } from 'lucide-react'
-import { Headset } from 'lucide-react'
-import { PenLine } from 'lucide-react'
-import { Eye } from 'lucide-react'
-import { Trash2 } from 'lucide-react'
+import { PiGraduationCap } from "react-icons/pi";
+import { HiBuildingOffice2 } from "react-icons/hi2";
+import { RiCustomerService2Line } from "react-icons/ri";
+import { LuPenLine } from "react-icons/lu";
+import { MdOutlineRemoveRedEye } from "react-icons/md";
+import { IoTrash } from "react-icons/io5";
 
 const GroupCard: React.FC<GroupCardProps> = ({ title, description, tutor, faculty, students, isActive = true }) => {
   const nevigate = useNavigate()
@@ -32,7 +31,7 @@ const GroupCard: React.FC<GroupCardProps> = ({ title, description, tutor, facult
       >
         <div
           className={`w-5.5 h-5.5 rounded-full shadow-md transform transition-transform duration-300 ${
-            isOn ? 'translate-x-5 bg-green-300' : '-translate-x-1 bg-gray-300'
+            isOn ? 'translate-x-5 bg-green-300' : '-translate-x-2 bg-gray-300'
           }`}
         ></div>
       </div>
@@ -48,41 +47,46 @@ const GroupCard: React.FC<GroupCardProps> = ({ title, description, tutor, facult
       {/* Details */}
       <div className='space-y-2 mb-6'>
         <div className='flex items-center space-x-2 text-sm text-gray-600'>
-          <Headset className='mb-1 text-gray-600'></Headset>
+          <RiCustomerService2Line size={20} className='mb-1 text-gray-600'></RiCustomerService2Line>
           <span>Tutor: {tutor}</span>
         </div>
         <div className='flex items-center space-x-2 text-sm text-gray-600'>
-          <Building2 className='mb-1 text-gray-600'></Building2>
+          <HiBuildingOffice2 size={20} className='mb-1 text-gray-600'></HiBuildingOffice2>  
           <span>Faculty: {faculty}</span>
         </div>
         <div className='flex items-center space-x-2 text-sm text-gray-600'>
-          <GraduationCap className='mb-1 text-gray-600'></GraduationCap>
+          <PiGraduationCap size={20} className='mb-1 text-gray-600'></PiGraduationCap>
           <span>Student: {students}</span>
         </div>
       </div>
 
       {/* View Buttons */}
-      <div className='flex flex-wrap justify-between items-center mt-auto gap-2'>
+      <div className='flex items-center justify-between gap-2 mt-auto flex-wrap'>
+        {/* View button */}
         <button
           onClick={handleViewDetails}
-          className='flex justify-items-center gap-1 px-4 py-2.5 md:px-5 border border-blue-800 text-blue-800 rounded-md hover:bg-blue-800 duration-200 ease-in-out hover:text-white transition-colors cursor-pointer'
+          className='flex items-center gap-1 px-3 md:w-22 py-2 border border-blue-800 text-blue-800 rounded-md hover:bg-blue-800 hover:text-white transition-all duration-200 ease-in-out'
         >
-          <Eye className='w-5 h-5' />
-          <p className='text-sm hidden md:inline font-semibold'>View</p>
+          <MdOutlineRemoveRedEye className='w-4 h-4 sm:w-5 sm:h-5' />
+          <p className='text-xs hidden md:inline font-semibold'>View</p>
         </button>
+
+        {/* Edit button */}
         <button
           onClick={handleViewDetails}
-          className='flex justify-items-center gap-1 px-4 py-2.5 md:px-6 border border-orange-600 text-orange-600 rounded-md hover:bg-orange-600 duration-200 ease-in-out hover:text-white transition-colors cursor-pointer'
+          className='flex items-center gap-1 px-3 md:w-22 py-2 border border-orange-600 text-orange-600 rounded-md hover:bg-orange-600 hover:text-white transition-all duration-200 ease-in-out'
         >
-          <PenLine className='w-5 h-5' />
-          <p className='text-sm hidden md:inline font-semibold'>Edit</p>
+          <LuPenLine className='w-4 h-4 sm:w-5 sm:h-5' />
+          <p className='text-xs hidden md:inline font-semibold'>Edit</p>
         </button>
+
+        {/* Delete button */}
         <button
           onClick={handleViewDetails}
-          className='flex justify-items-center gap-1 px-4 py-2.5 md:px-4 border border-red-600 text-red-600 rounded-md hover:bg-red-600 duration-200 ease-in-out hover:text-white transition-colors cursor-pointer'
+          className='flex items-center gap-1 px-3 md:w-22 py-2 border border-red-800 text-red-800 rounded-md hover:bg-red-800 hover:text-white transition-all duration-200 ease-in-out'
         >
-          <Trash2 className='w-5 h-5' />
-          <p className='text-sm hidden md:inline font-semibold'>Delete</p>
+          <IoTrash className='w-4 h-4 sm:w-5 sm:h-5' />
+          <p className='text-xs hidden md:inline font-semibold'>Delete</p>
         </button>
       </div>
     </div>
