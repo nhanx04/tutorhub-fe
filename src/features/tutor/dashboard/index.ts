@@ -1,2 +1,3 @@
 export * from './tutor-dashboard'
-export * from './createGroupForm'
+export * from './create-group'
+export * from './edit-group'
