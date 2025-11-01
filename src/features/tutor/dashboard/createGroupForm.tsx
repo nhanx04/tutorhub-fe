@@ -8,7 +8,7 @@ export const createGroupForm = () => {
   return (
     <MainLayout>
       <div className='flex flex-col gap-7 text-black'>
-       gayyyyyyyy
+      
       </div>
     </MainLayout>
   )
