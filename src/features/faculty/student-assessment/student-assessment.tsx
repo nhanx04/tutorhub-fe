@@ -1,6 +1,7 @@
 import { MainLayout } from 'src/layouts'
 import React, { useMemo } from 'react';
 import Table, { type Column } from 'src/features/faculty/student-assessment/components/Table';
+import { exportStudentPdf } from './components/exportPdf';
 
 import { FiUser, FiDownload, FiSearch, FiMessageSquare } from "react-icons/fi";
 import { HiOutlineMail } from "react-icons/hi";
@@ -112,7 +113,7 @@ export const StudentAssessmentPage = () => {
           <div className='flex md:col-span-1'>
             <button
               onClick={handleSearch}
-              className='flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-white'
+              className='flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-white  hover:bg-indigo-800'
             >
               <FiSearch size={18} />
               <span>Search</span>
@@ -121,15 +122,18 @@ export const StudentAssessmentPage = () => {
         </div>
 
         {/* Title + Export */}
-        <div className='flex justify-between items-center mb-5 p-4 bg-blue-100 rounded-lg border border-blue-100'>
-          <h3 className='text-xl font-bold text-blue-800 flex items-center gap-2'>
+        <div className='flex justify-between items-center mb-5 p-4 bg-blue-100 rounded-lg border border-blue-100' >
+          <h3 className='text-xl font-bold text-blue-800 flex items-center gap-2' >
             <TfiMenuAlt className='w-6 h-6' />
             Student Review ({filteredData.length} items)
           </h3>
-          <button className='flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-white'>
-            <FiDownload size={18} />
-            <span>Export</span>
-          </button>
+        <button
+         onClick={() => exportStudentPdf(filteredData)}
+          className='flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-white  hover:bg-green-700'
+        >
+          <FiDownload size={18} />
+          <span>Export</span>
+        </button>
         </div>
 
         {/* Table */}

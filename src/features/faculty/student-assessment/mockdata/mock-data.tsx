@@ -9,10 +9,10 @@ export interface TutorItem {
 
 // --- Dữ Liệu Mẫu (Sample Data) ---
 export const tutorData: TutorItem[] = [
-  { stuId: '123123', name: 'Nguyễn Trọng Nhân', email: 'nhan.nguyenxxx04@hcmcut.edu.vn', score: 9, feedback: 'Học tốt', tutor: 'Lê Trần Tấn Phát' },
-  { stuId: '123124', name: 'Trần Thị Thuý', email: 'thuy.tran@mail.com', score: 8, feedback: 'Chăm chỉ', tutor: 'Lê Trần Tấn Phát' },
-  { stuId: '123125', name: 'Lê Văn Khải', email: 'khai.le@mail.com', score: 10, feedback: 'Xuất sắc, nắm vững kiến thức', tutor: 'Hoàng Giữ Tiên Nhất' },
-  { stuId: '123126', name: 'Phan Anh Dũng', email: 'dung.phan@mail.com', score: 7, feedback: 'Cần cải thiện tốc độ', tutor: 'Lê Trần Tấn Phát' },
-  { stuId: '123127', name: 'Bùi Thị Lan', email: 'lan.bui@mail.com', score: 9, feedback: 'Phản hồi nhanh', tutor: 'Hoàng Giữ Tiên Nhất' },
-  { stuId: '123128', name: 'Đỗ Minh Tuấn', email: 'tuan.do@mail.com', score: 8, feedback: 'Hoàn thành bài tập tốt', tutor: 'Lê Trần Tấn Phát' },
+  { stuId: '123123', name: 'Nguyen Trong Nhan', email: 'nhan.nguyenxxx04@hcmcut.edu.vn', score: 9, feedback: 'HHoc tot', tutor: 'Le Tran Tan Phat' },
+  { stuId: '123124', name: 'Tran Thi Thuy', email: 'thuy.tran@mail.com', score: 8, feedback: 'Cham chi', tutor: 'Le Tran Tan Phat' },
+  { stuId: '123125', name: 'Le Van Khai', email: 'khai.le@mail.com', score: 10, feedback: 'Xuat sac, nam vung kien thuc', tutor: 'Hoang Giu Tien Nhat' },
+  { stuId: '123126', name: 'Phan Anh Dung', email: 'dung.phan@mail.com', score: 7, feedback: 'Can cai thien toc do', tutor: 'Le Tran Tan Phat' },
+  { stuId: '123127', name: 'Bui Thi Lan', email: 'lan.bui@mail.com', score: 9, feedback: 'Phan hoi nhanh', tutor: 'Hoang Giu Tien Nhat' },
+  { stuId: '123128', name: 'Do Minh Tuan', email: 'tuan.do@mail.com', score: 8, feedback: 'Hoan thanh bai tap tot', tutor: 'Le Tran Tan Phat' },
 ];

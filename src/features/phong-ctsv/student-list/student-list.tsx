@@ -4,7 +4,7 @@ import Table from "src/features/faculty/student-assessment/components/Table";
 import { CiCalendar, CiFilter } from "react-icons/ci";
 import { FiSearch, FiDownload } from "react-icons/fi";
 import { useStudentList } from "./components/useStudentList";
-
+import { exportStudentListPdf } from "./components/exportStudentListPdf";
 export const StudentListPage = () => {
   const {
     selectedFaculty,
@@ -132,7 +132,7 @@ export const StudentListPage = () => {
           {/* Export */}
           <div className="flex">
             <button
-              onClick={() => console.log("Export CSV…")}
+                onClick={() => exportStudentListPdf(filteredData)}
               className="flex w-full items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-white font-medium shadow-md hover:bg-green-700"
             >
               <FiDownload size={18} />

@@ -7,6 +7,7 @@ import { IoArrowForwardOutline } from "react-icons/io5";
 
 import type { TutorSummary } from "./mockdata/tutor-data";
 import { useTutorList } from "./components/useTutorList";
+import { exportTutorListPdf } from "./components/exportTutorListPdf";
 
 export const TutorListPage = () => {
   const {
@@ -106,7 +107,7 @@ export const TutorListPage = () => {
          {/* Export */}
           <div className="flex">
             <button
-              onClick={() => console.log("Export CSV…")}
+              onClick={() => exportTutorListPdf(filteredData)}
               className="flex w-full items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-white font-medium shadow-md hover:bg-green-700"
             >
               <FiDownload size={18} />
