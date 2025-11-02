@@ -1,0 +1,391 @@
+// import { MainLayout } from 'src/layouts'
+// import React, { useState, useMemo, useCallback , useEffect} from 'react';
+// import Table, {type Column} from 'src/features/faculty/student-assessment/components/Table';
+// import { FiDownload } from "react-icons/fi";
+// import { FiSearch } from "react-icons/fi";
+// import { CiFilter } from "react-icons/ci";
+// import { CiCalendar } from "react-icons/ci";
+// import { IoArrowForwardOutline } from "react-icons/io5";
+
+// interface StudentRow {
+//     stuId: string;
+//     name: string;
+//     faculty: string;
+//     topic: string;
+//     tutor : string;
+// }
+// interface TutorSummary {
+//   faculties: string;
+//   numFaculties: number;
+//   tutorId: string;
+//   tutor: string;
+//   totalGroups: number;
+//   totalSessions: number;
+//   students: StudentRow[];
+// }
+// // --- Data Definitions ---
+// const tutorDataa = [
+//     { stuId: '123123', name: 'Nguyễn Trọng Nhân', faculty: 'Computer Science and Engineering', topic: 'Web Programming', groups: 1, sessions: 1, tutor: 'Lê Trần Tấn Phát' },
+//     { stuId: '123124', name: 'Trần Thị Thuý', faculty: 'Computer Science and Engineering', topic: 'Data Structures', groups: 2, sessions: 2, tutor: 'Lê Trần Tấn Phát' },
+//     { stuId: '123125', name: 'Lê Văn Khải', faculty: 'Business Administration', topic: 'Financial Accounting', groups: 3, sessions: 3, tutor: 'Hoàng Giữ Tiên Nhất' },
+//     { stuId: '123126', name: 'Phan Anh Dũng', faculty: 'Business Administration', topic: 'Digital Marketing', groups: 4, sessions: 4, tutor: 'Lê Trần Tấn Phát' },
+//     { stuId: '123127', name: 'Bùi Thị Lan', faculty: 'Foreign Languages', topic: 'Academic English', groups: 5, sessions: 5, tutor: 'Hoàng Giữ Tiên Nhất' },
+//     { stuId: '123128', name: 'Đỗ Minh Tuấn', faculty: 'Mechanical Engineering', topic: 'Engineering Drawing', groups: 6, sessions: 6, tutor: 'Lê Trần Tấn Phát' },
+//     { stuId: '123129', name: 'Hoàng Văn Cường', faculty: 'Computer Science and Engineering', topic: 'Network Security', groups: 7, sessions: 7, tutor: 'Hoàng Giữ Tiên Nhất' },
+// ];
+
+// // MAPPING ID CỐ ĐỊNH CHO MỖI TUTOR
+// const TUTOR_ID_MAP: Record<string, string> = {
+//     'Lê Trần Tấn Phát': '0001',
+//     'Hoàng Giữ Tiên Nhất': '0002',
+// };
+
+// // --- DATA AGGREGATION UTILITY ---
+// const aggregateTutorData = (students: StudentRow[]) : TutorSummary[] => {
+//      type TutorTemp = Omit<TutorSummary, 'faculties' | 'numFaculties'> & {
+//     faculties: Set<string>;
+//   };
+//     const tutorMap: Record<string, TutorTemp> = {};
+
+//     students.forEach((student: StudentRow) => {
+//         const tutorName = student.tutor;
+//         const tutorId = TUTOR_ID_MAP[tutorName] || 'TUNK';
+
+//         if (!tutorMap[tutorName]) {
+//             tutorMap[tutorName] = {
+//                 tutorId,
+//                 tutor: tutorName,
+//                 faculties: new Set(),
+//                 totalGroups: 1,
+//                 totalSessions: 1,
+//                 students: []
+//             };
+//             }
+//                 const tutor = tutorMap[tutorName];
+//                         tutor.faculties.add(student.faculty);
+//                         tutor.students.push(student);
+//                     });
+
+//                     return Object.values(tutorMap).map((tutor) => ({
+//                         ...tutor,
+//                         faculties: Array.from(tutor.faculties).join(', '),
+//                         numFaculties: tutor.faculties.size
+//     }));
+// };
+
+
+// // --- MAIN TUTOR LIST COMPONENT ---
+// export const TutorListPage = () => {
+//     // Tính toán dữ liệu tổng hợp cơ bản chỉ một lần
+//     const baseTutorData = useMemo(() => aggregateTutorData(tutorDataa), []);
+
+//     // States for Filters
+//     const [selectedFaculty, setSelectedFaculty] = useState('');
+//     const [selectedTutor, setSelectedTutor] = useState('');
+//     const [dateFrom, setDateFrom] = useState('');
+//     const [dateTo, setDateTo] = useState('');
+
+//     // State for Displayed Data (Khởi tạo bằng toàn bộ dữ liệu)
+//      const [filteredData, setFilteredData] = useState<TutorSummary[]>([]);
+
+
+//     // State for Modal
+//     const [isModalOpen, setIsModalOpen] = useState(false);
+//     const [modalContent, setModalContent] = useState<TutorSummary | null>(null);
+
+
+//     // Lấy danh sách Faculty và Tutor duy nhất
+//     const uniqueFaculties = useMemo(() => {
+//         return [...new Set(tutorDataa.map((item) => item.faculty))].sort();
+//     }, []);
+//     const uniqueTutors = useMemo(() => {
+//         return [...new Set(tutorDataa.map((item) => item.tutor))].sort();
+//     }, []);
+
+//     // Logic lọc chính
+//     const applyFilter = useCallback((faculty : string , tutor : string) => {
+//         // Bỏ qua lọc ngày tháng (chỉ là mock)
+        
+//         const result = baseTutorData.filter((item) => {
+//             const facultyMatch = faculty === '' || item.faculties.includes(faculty);
+//             const tutorMatch = tutor === '' || item.tutor === tutor;
+
+//             return facultyMatch && tutorMatch;
+//         });
+
+//         setFilteredData(result);
+//     }, [baseTutorData]);
+
+//     // CHỈ CHẠY MỘT LẦN KHI MOUNT để khởi tạo bảng.
+//     // LỌC DỮ LIỆU ĐƯỢC CHUYỂN HOÀN TOÀN VÀO handleSearch.
+//     useEffect(() => {
+//         applyFilter('', ''); // Hiển thị tất cả dữ liệu ban đầu
+//     }, [applyFilter]);
+
+//     // Handler cho nút Search (Điểm mấu chốt: chỉ gọi applyFilter ở đây)
+//     const handleSearch = () => {
+//         applyFilter(selectedFaculty, selectedTutor);
+//     };
+    
+//     // Handler cho xem chi tiết tutor
+//     const handleViewAssessment = (rowData : TutorSummary) => {
+//         setModalContent(rowData);
+//         setIsModalOpen(true);
+//     };
+
+//     const columns: Column<TutorSummary>[] = useMemo(() => [
+//         // THÊM CỘT TUTOR ID VÀO ĐẦU
+//         { 
+//             header: 'Tutor ID', 
+//             accessor: 'tutorId', 
+//             width: '10%',
+//             render: (row : TutorSummary) => (
+//                 <span className='font-mono text-gray-500'>{row.tutorId}</span>
+//             )
+//         },
+//         {
+//             header: 'Tutor Name',
+//             accessor: 'tutor',
+//             width: '20%', // Giảm kích thước Tutor Name để nhường chỗ cho ID
+//             render: (row : TutorSummary) => (
+//                 <span className='font-semibold text-indigo-700'>{row.tutor}</span>
+//             )
+//         },
+//         {
+//             header: 'Faculties Taught',
+//             accessor: 'faculties',
+//             width: '35%',
+//             render: (row : TutorSummary) => (
+//                 <span className='text-sm text-gray-700'>{row.faculties}</span>
+//             )
+//         },
+//         {
+//             header: 'Total Groups',
+//             accessor: 'totalGroups',
+//             width: '10%', // Tối ưu hóa kích thước
+//             textAlign: 'center',
+//             render: (row : TutorSummary) => (
+//                 <span className='font-mono text-lg text-green-600 font-bold'>{row.totalGroups}</span>
+//             ),
+//         },
+//         {
+//             header: 'Total Sessions',
+//             accessor: 'totalSessions',
+//             width: '15%', // Tối ưu hóa kích thước
+//             textAlign: 'center',
+//             render: (row : TutorSummary) => (
+//                 <span className='font-mono text-lg text-blue-600 font-bold'>{row.totalSessions}</span>
+//             ),
+//         },
+//         {
+//             header: 'View',
+//             width: '10%',
+//             textAlign: 'center',
+//             render: (row : TutorSummary) => (
+//                 <button
+//                     onClick={() => handleViewAssessment(row)}
+//                     className='flex items-center justify-center mx-auto gap-1 rounded-full bg-cyan-500 px-3 py-1.5 text-white text-sm font-medium shadow-md transition hover:bg-cyan-600 transform hover:scale-105'
+//                 >
+//                     <IoArrowForwardOutline size={16} />
+//                 </button>
+//             ),
+//         },
+//     ], [handleViewAssessment]);
+
+//     return (
+//         <MainLayout>
+//             <div className='p-4 md:p-8 bg-white shadow-2xl rounded-xl'>
+//                 {/* --- KHỐI LỌC: Đã bỏ Topic và chỉ còn 6 cột --- */}
+//                 <div className='grid grid-cols-2 md:grid-cols-6 gap-3 mb-8 items-end p-4 bg-gray-50 rounded-xl border border-gray-200'>
+
+//                     {/* 1. Dropdown chọn Faculty */}
+//                     <div>
+//                         <label htmlFor="faculty" className="block text-xs font-medium text-gray-700 mb-1">Faculty</label>
+//                         <select
+//                             id='faculty'
+//                             value={selectedFaculty}
+//                             onChange={(e) => setSelectedFaculty(e.target.value)}
+//                             className='w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white transition duration-150'
+//                         >
+//                             <option value=''>--- All Faculties ---</option>
+//                             {uniqueFaculties.map((faculty, index) => (
+//                                 <option key={index} value={faculty}>
+//                                     {faculty}
+//                                 </option>
+//                             ))}
+//                         </select>
+//                     </div>
+
+//                     {/* 2. Dropdown chọn Tutor */}
+//                     <div>
+//                         <label htmlFor="tutor" className="block text-xs font-medium text-gray-700 mb-1">Tutor</label>
+//                         <select
+//                             id='tutor'
+//                             value={selectedTutor}
+//                             onChange={(e) => setSelectedTutor(e.target.value)}
+//                             className='w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white transition duration-150'
+//                         >
+//                             <option value=''>--- All Tutors ---</option>
+//                             {uniqueTutors.map((tutor, index) => (
+//                                 <option key={index} value={tutor}>
+//                                     {tutor}
+//                                 </option>
+//                             ))}
+//                         </select>
+//                     </div>
+
+//                     {/* 3. Input From Date (Mock Style only) */}
+//                     <div className='relative'>
+//                         <label htmlFor="date-from" className="block text-xs font-medium text-gray-700 mb-1">From</label>
+//                         <input
+//                             type='date'
+//                             id='date-from'
+//                             value={dateFrom}
+//                             onChange={(e) => setDateFrom(e.target.value)}
+//                             className='w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 pr-8'
+//                             placeholder="dd/mm/yyyy"
+//                         />
+//                         <CiCalendar size={18} className='absolute right-2 top-7 text-gray-400 pointer-events-none'/>
+//                     </div>
+
+//                     {/* 4. Input To Date (Mock Style only) */}
+//                     <div className='relative'>
+//                         <label htmlFor="date-to" className="block text-xs font-medium text-gray-700 mb-1">To</label>
+//                         <input
+//                             type='date'
+//                             id='date-to'
+//                             value={dateTo}
+//                             onChange={(e) => setDateTo(e.target.value)}
+//                             className='w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 pr-8'
+//                             placeholder="dd/mm/yyyy"
+//                         />
+//                         <CiCalendar size={18} className='absolute right-2 top-7 text-gray-400 pointer-events-none'/>
+//                     </div>
+
+//                     {/* 5. Nút Search (KÍCH HOẠT LỌC DỮ LIỆU) */}
+//                     <div className='flex'>
+//                         <button
+//                             onClick={handleSearch}
+//                             className='cursor-pointer flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-700 px-4 py-2.5 text-white font-medium shadow-md transition duration-200 ease-in-out hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
+//                         >
+//                             <FiSearch size={18} />
+//                             <span>Search</span>
+//                         </button>
+//                     </div>
+
+//                     {/* 6. Nút Export */}
+//                     <div className='flex'>
+//                         <button
+//                             onClick={() => console.log("Exporting filtered tutor data to CSV...")}
+//                             className='flex w-full items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-white font-medium shadow-md transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2'
+//                         >
+//                             <FiDownload size={18} />
+//                             <span>Export</span>
+//                         </button>
+//                     </div>
+//                 </div>
+
+//                 {/* --- DATA TABLE --- */}
+//                 <div className='mb-4 flex items-center gap-3 text-lg font-semibold text-gray-700'>
+//                     <CiFilter size={20} className="text-indigo-500" />
+//                     List of Tutors ({filteredData.length} entries)
+//                 </div>
+//                 <Table columns={columns} data={filteredData} />
+//             </div>
+
+
+//         </MainLayout>
+//     );
+// };
+
+
+
+
+
+
+// const X = (props: IconProps) => (
+//     <svg xmlns="http://www.w3.org/2000/svg" width={props.size || 24} height={props.size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+//         <line x1="18" y1="6" x2="6" y2="18"></line>
+//         <line x1="6" y1="6" x2="18" y2="18"></line>
+//     </svg>
+// );
+
+// // --- MODAL COMPONENT (Detail Tutor) ---
+
+
+// interface TutorDetailModalProps {
+//   isOpen: boolean;
+//   onClose: () => void;
+//   tutorData: TutorSummary | null;
+// }
+
+// const TutorDetailModal: React.FC<TutorDetailModalProps> = ({ isOpen, onClose, tutorData }) => {
+//     if (!isOpen || !tutorData) return null;
+
+//     return (
+//         <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4" onClick={onClose}>
+//             <div
+//                 className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all duration-300 scale-100"
+//                 onClick={(e) => e.stopPropagation()}
+//             >
+//                 <div className="flex justify-between items-center p-5 border-b bg-indigo-50 border-indigo-200">
+//                     <h3 className="text-xl font-bold text-indigo-700">Tutor Detail: {tutorData.tutor} ({tutorData.tutorId})</h3>
+//                     <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition">
+//                         <X size={24} />
+//                     </button>
+//                 </div>
+//                 <div className="p-6 space-y-6">
+//                     <div className='flex flex-col space-y-2 border-b pb-4'>
+//                         <span className="text-xs font-semibold uppercase text-gray-500">Number of Faculties Taught</span>
+//                         <span className="text-2xl font-bold text-indigo-600">{tutorData.numFaculties}</span>
+//                     </div>
+
+//                     <div className="grid grid-cols-2 gap-4">
+//                         <div className='flex flex-col'>
+//                             <span className="text-xs font-semibold uppercase text-gray-500">Total Groups Handled</span>
+//                             <span className="text-lg font-medium text-gray-800">{tutorData.totalGroups}</span>
+//                         </div>
+//                         <div className='flex flex-col'>
+//                             <span className="text-xs font-semibold uppercase text-gray-500">Total Sessions Conducted</span>
+//                             <span className="text-lg font-medium text-gray-800">{tutorData.totalSessions}</span>
+//                         </div>
+//                     </div>
+
+//                     <div className='pt-4 border-t'>
+//                         <h4 className="text-base font-bold text-gray-700 mb-2">Faculties ({tutorData.numFaculties})</h4>
+//                         <p className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+//                             {tutorData.faculties}
+//                         </p>
+//                     </div>
+
+//                     <div className='pt-4 border-t'>
+//                         <h4 className="text-base font-bold text-gray-700 mb-2">Students Taught ({tutorData.students.length})</h4>
+//                         <ul className="max-h-40 overflow-y-auto space-y-1 p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700">
+//                             {tutorData.students.map((student, index) => (
+//                                 <li key={index} className='truncate'>
+//                                     <span className="font-semibold">{student.name}</span> (ID: {student.stuId}) - {student.topic}
+//                                 </li>
+//                             ))}
+//                         </ul>
+//                     </div>
+
+//                 </div>
+//                 <div className="p-5 border-t flex justify-end">
+//                     <button
+//                         onClick={onClose}
+//                         className="rounded-lg bg-indigo-600 px-4 py-2 text-white font-medium shadow-md transition hover:bg-indigo-700"
+//                     >
+//                         Close
+//                     </button>
+//                 </div>
+//             </div>
+//         </div>
+//     );
+// };
+
+            {/* Tutor Detail Modal */}
+            {/* <TutorDetailModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                tutorData={modalContent}
+            /> */}
