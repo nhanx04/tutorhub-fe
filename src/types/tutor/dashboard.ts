@@ -1,7 +1,7 @@
 export interface TutorGroupCardProps {
   id: number
 
-  title: string
+  groupName: string
 
   description: string
 
@@ -9,7 +9,14 @@ export interface TutorGroupCardProps {
 
   faculty: string
 
-  students: number
+  studentLimit: number
 
-  isActive?: boolean
+  status: string
+}
+export interface ModalProps {
+  show: boolean
+  onClick: () => void
+  title?: string
+  message?: string
+  icon?: React.ReactNode
 }

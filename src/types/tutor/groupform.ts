@@ -1,12 +1,15 @@
 export interface TutorGroupFormProps {
   mode: 'create' | 'edit'
   initialData?: {
-    topic: string
-    title: string
+    groupName: string
     description: string
-    fromDate: string
-    toDate: string
-    students: number
+    studentLimit: number
+    startDate: string
+    endDate: string
+    topicIds: {
+      id: number
+      name: string
+    }[]
     status: string
   }
   onCancel: () => void

@@ -8,20 +8,58 @@ import Modal from './PopupNoti'
 import type { TutorGroupFormProps } from 'src/types'
 
 const GroupForm: React.FC<TutorGroupFormProps> = ({ mode, initialData, onCancel, onSubmit }) => {
-  const [topic, setTopic] = useState(initialData?.topic || '')
-  const [title, setGroupName] = useState(initialData?.title || '')
+  const [groupName, setGroupName] = useState(initialData?.groupName || '')
+  const [topicIds, setTopics] = useState<number[]>(
+    Array.isArray(initialData?.topicIds)
+      ? initialData.topicIds.map((topic) => (typeof topic === 'number' ? topic : topic.id))
+      : []
+  )
   const [description, setDescription] = useState(initialData?.description || '')
-  const [fromDate, setFromDate] = useState(initialData?.fromDate || '2025-01-01')
-  const [toDate, setToDate] = useState(initialData?.toDate || '2025-12-31')
-  const [students, setNumStudents] = useState(initialData?.students || 0)
+  const [startDate, setFromDate] = useState(initialData?.startDate || '2025-01-01')
+  const [endDate, setToDate] = useState(initialData?.endDate || '2025-12-31')
+  const [studentLimit, setNumStudents] = useState(initialData?.studentLimit || 0)
   const [status, setStatus] = useState(initialData?.status || 'active')
   const [showConfirm, setShowConfirm] = useState(false)
+  const [selectedTopics, setSelectedTopics] = useState<(typeof topicData)[number][]>([])
+
+
+  // vừa vào chế độ edit -->load các topic vào mảng selectedTopics
+  useEffect(() => {
+    if (mode === 'edit' && topicIds && topicIds.length > 0) {
+      const preselected = topicData.filter((t) => topicIds.map(String).includes(String(t.id)))
+      setSelectedTopics(preselected)
+    }
+  }, [mode, topicIds])
+
+  // hàm thêm topic
+  const handleSelectTopic = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const topicId = e.target.value
+    if (!topicId) return
+
+    const selectedTopic = topicData.find((t) => String(t.id) === topicId)
+    if (selectedTopic && !selectedTopics.find((t) => String(t.id) === topicId)) {
+      setSelectedTopics((prev) => [...prev, selectedTopic])
+    }
+    e.target.value = '' // kết thúc hàm reset lại
+  }
+
+  // hàm xóa topic
+  const handleRemoveTopic = (topicId: string | number) => {
+    setSelectedTopics((prev) => prev.filter((t) => String(t.id) !== String(topicId)))
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    const data = { topic, title, description, fromDate, toDate, students, status }
+    setTopics(selectedTopics.map((t) => t.id))
+    const data = { groupName, selectedTopics, description, startDate, endDate, studentLimit, status } //thiếu trường faculty(có thể thêm sau)
+    // console.log(data)
     onSubmit(data)
     setShowConfirm(true)
+  }
+
+  const handleBack = () => {
+    setShowConfirm(false)
+    onCancel()
   }
 
   return (
@@ -30,7 +68,7 @@ const GroupForm: React.FC<TutorGroupFormProps> = ({ mode, initialData, onCancel,
       {showConfirm && (
         <Modal
           show={showConfirm}
-          onClose={() => setShowConfirm(false)}
+          onClick={() => handleBack()}
           title={mode === 'create' ? 'Đã lưu!' : 'Đã cập nhật!'}
           message={mode === 'create' ? 'Tạo nhóm thành công.' : 'Cập nhật thông tin nhóm thành công.'}
           icon={
@@ -49,25 +87,57 @@ const GroupForm: React.FC<TutorGroupFormProps> = ({ mode, initialData, onCancel,
             <div className='flex flex-col gap-5'>
               <div>
                 <p className='mb-1 font-medium'>Topic</p>
+
+                {/* hiển thị các topic đã chọn */}
+                {selectedTopics.length > 0 && (
+                  <div className='flex flex-wrap gap-2 mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200'>
+                    {selectedTopics.map((topic) => (
+                      <div
+                        key={topic.id}
+                        className='flex items-center gap-2 bg-blue-500 text-white px-3 py-1.5 rounded-md text-xs font-medium'
+                      >
+                        <span>{topic.name}</span>
+                        <button
+                          type='button'
+                          onClick={() => handleRemoveTopic(topic.id)}
+                          className='bg-red-700 hover:bg-red-950 rounded-sm p-0.5 w-5 transition'
+                        >
+                          X
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* dropdown để chọn topic */}
                 <select
-                  className='w-full border border-gray-300 rounded-lg px-3 py-2'
-                  value={topic}
-                  onChange={(e) => setTopic(e.target.value)}
+                  className='w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500'
+                  value=''
+                  onChange={handleSelectTopic}
                 >
-                  <option value=''>Select Topic</option>
-                  {topicData.map((t) => (
-                    <option key={t.id} value={t.name}>
-                      {t.name}
-                    </option>
-                  ))}
+                  <option value=''>{selectedTopics.length === 0 ? 'Select Topic' : 'Add more topics...'}</option>
+                  {topicData
+                    .filter((t) => !selectedTopics.find((st) => st.id === t.id))
+                    .map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name}
+                      </option>
+                    ))}
                 </select>
+
+                {/* hiển thị số lượng topics đã chọn */}
+                {selectedTopics.length > 0 && (
+                  <p className='text-xs text-gray-500 mt-2'>
+                    {selectedTopics.length} topic{selectedTopics.length > 1 ? 's' : ''} selected
+                  </p>
+                )}
               </div>
 
               <div>
                 <p className='mb-1 font-medium'>Group name</p>
                 <input
                   type='text'
-                  value={title}
+                  value={groupName}
                   onChange={(e) => setGroupName(e.target.value)}
                   placeholder='Enter group name'
                   className='w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none'
@@ -92,7 +162,7 @@ const GroupForm: React.FC<TutorGroupFormProps> = ({ mode, initialData, onCancel,
                   <p className='mb-1 font-medium'>From</p>
                   <input
                     type='date'
-                    value={fromDate}
+                    value={startDate}
                     onChange={(e) => setFromDate(e.target.value)}
                     className='w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none'
                   />
@@ -102,7 +172,7 @@ const GroupForm: React.FC<TutorGroupFormProps> = ({ mode, initialData, onCancel,
                   <p className='mb-1 font-medium'>To</p>
                   <input
                     type='date'
-                    value={toDate}
+                    value={endDate}
                     onChange={(e) => setToDate(e.target.value)}
                     className='w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none'
                   />
@@ -110,11 +180,11 @@ const GroupForm: React.FC<TutorGroupFormProps> = ({ mode, initialData, onCancel,
               </div>
               <div className='flex flex-col gap-5'>
                 <div>
-                  <p className='mb-1 font-medium'>Number of students</p>
+                  <p className='mb-1 font-medium'>Number of studentLimit</p>
                   <input
                     type='number'
                     min={0}
-                    value={students}
+                    value={studentLimit}
                     onChange={(e) => setNumStudents(Number(e.target.value))}
                     className='w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none'
                   />
@@ -137,13 +207,14 @@ const GroupForm: React.FC<TutorGroupFormProps> = ({ mode, initialData, onCancel,
 
           {/* nút save/update, cancel */}
           <div className='flex justify-end gap-4 mt-8'>
-            <div
+            <button
+              type='button'
               onClick={onCancel}
               className='w-27 px-4 py-2 rounded-lg border border-gray-300 flex items-center gap-2 hover:bg-gray-100'
             >
-              <RxCrossCircled></RxCrossCircled>
-              <button>Cancel</button>
-            </div>
+              <RxCrossCircled />
+              Cancel
+            </button>
 
             {/* màu và nội dung nút phụ thuộc và kiểu form */}
             <div

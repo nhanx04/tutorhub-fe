@@ -12,33 +12,35 @@ import Modal from './PopupNoti'
 // 1 thẻ cho 1 nhóm ở tutor dashboard
 const GroupCard: React.FC<TutorGroupCardProps> = ({
   id,
-  title,
+  groupName,
   description,
   tutor,
   faculty,
-  students,
-  isActive = true
+  studentLimit,
+  status
 }) => {
   const navigate = useNavigate()
-  const [isOn, setIsOn] = useState(false)
+  const [isOn, setIsOn] = useState(status === '1' ? true : false)
   const [showDelete, setShowDelete] = useState(false)
-  const stringId = String(id)
+  // const stringId = String(id)
 
-  const handleViewDetails = () => {
-    navigate(`/student/group-detail`)
+  const handleEditGroup = () => {
+    navigate(`/tutor/edit-group/${id}`)
+  }
+
+  const handleViewGroup = () => {
+    navigate(`/tutor/group-detail/${id}`)
   }
 
   //xử lý xóa nhóm tư vấn (GỌI API)
   const handleDeleteGroup = () => {
     //api
-    setShowDelete(true)
+    setShowDelete(false)
   }
 
-  const handleEditGroup = (id: string) => {
-    navigate(`/tutor/edit-group/${id}`)
-  }
-
-  const toggleSwitch = () => {
+  //nút toggle góc trên phải của thẻ
+  const handleToggleSwitch = () => {
+    //GỌI API thay đổi trạng thái
     setIsOn(!isOn)
   }
 
@@ -47,18 +49,18 @@ const GroupCard: React.FC<TutorGroupCardProps> = ({
       {showDelete && (
         <Modal
           show={showDelete}
-          onClose={() => setShowDelete(false)}
-          title='Đã xóa!'
-          message='Xóa nhóm thành công.'
+          onClick={() => handleDeleteGroup()}
+          title='Xác nhận!'
+          message='Các thông tin liên quan sẽ bị xóa'
           icon={<IoTrash size={100} className='text-red-600' />}
         />
       )}
 
       <div className='flex flex-col h-full bg-white rounded-lg shadow-sm border border-gray-300 p-6 hover:shadow-md transition-shadow min-h-110'>
-        {/* Active button */}
+        {/* nút on/off*/}
 
         <div
-          onClick={toggleSwitch}
+          onClick={handleToggleSwitch}
           className={`w-11 h-4 mr-5 mb-4 flex items-center ml-auto rounded-full p-1 cursor-pointer transition-colors duration-300 ${
             isOn ? 'bg-green-600' : 'bg-gray-500'
           }`}
@@ -72,7 +74,7 @@ const GroupCard: React.FC<TutorGroupCardProps> = ({
 
         <div className='flex-grow'>
           {/* Title */}
-          <h3 className='text-lg font-semibold text-gray-800 mb-3 break-words'>{title}</h3>
+          <h3 className='text-lg font-semibold text-gray-800 mb-3 break-words'>{groupName}</h3>
 
           {/* Description */}
           <p className='text-gray-600 text-sm mb-4 break-words'>{description}</p>
@@ -90,7 +92,7 @@ const GroupCard: React.FC<TutorGroupCardProps> = ({
           </div>
           <div className='flex items-center space-x-2 text-sm text-gray-600'>
             <PiGraduationCap size={20} className='mb-1 text-gray-600'></PiGraduationCap>
-            <span>Student: {students}</span>
+            <span>Student: {studentLimit}</span>
           </div>
         </div>
 
@@ -98,7 +100,7 @@ const GroupCard: React.FC<TutorGroupCardProps> = ({
         <div className='flex items-center justify-between gap-2 mt-auto flex-wrap'>
           {/* View button */}
           <button
-            onClick={handleViewDetails}
+            onClick={() => handleViewGroup()}
             className='flex items-center gap-1 px-3 md:w-22 py-2 border border-blue-800 text-blue-800 rounded-md hover:bg-blue-800 hover:text-white transition-all duration-200 ease-in-out'
           >
             <MdOutlineRemoveRedEye className='w-4 h-4 sm:w-5 sm:h-5' />
@@ -107,7 +109,7 @@ const GroupCard: React.FC<TutorGroupCardProps> = ({
 
           {/* Edit button */}
           <button
-            onClick={() => handleEditGroup(stringId)}
+            onClick={() => handleEditGroup()}
             className='flex items-center gap-1 px-3 md:w-22 py-2 border border-orange-600 text-orange-600 rounded-md hover:bg-orange-600 hover:text-white transition-all duration-200 ease-in-out'
           >
             <LuPenLine className='w-4 h-4 sm:w-5 sm:h-5' />
@@ -116,7 +118,7 @@ const GroupCard: React.FC<TutorGroupCardProps> = ({
 
           {/* Delete button */}
           <button
-            onClick={handleDeleteGroup}
+            onClick={() => setShowDelete(true)}
             className='flex items-center gap-1 px-3 md:w-22 py-2 border border-red-800 text-red-800 rounded-md hover:bg-red-800 hover:text-white transition-all duration-200 ease-in-out'
           >
             <IoTrash className='w-4 h-4 sm:w-5 sm:h-5' />

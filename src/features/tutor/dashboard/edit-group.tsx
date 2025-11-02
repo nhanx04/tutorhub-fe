@@ -9,6 +9,7 @@ export const editGroup = () => {
   const numericId = Number(id) // convert sang number
 
   // tìm tutor có id tương ứng (GỌI API sau này)
+  //chỗ này là lấy 1 nhóm (group) của 1 tutor để chỉnh sửa
   const tutor = tutorCardData.find((item) => item.id === numericId)
 
   // ko tìm đc tutor
@@ -18,18 +19,19 @@ export const editGroup = () => {
 
   // chỉ lấy những dữ liệu phù hợp
   const existingGroup = {
-    topic: tutor.topic,
-    title: tutor.title,
+    groupName: tutor.groupName,
     description: tutor.description,
-    fromDate: tutor.fromDate,
-    toDate: tutor.toDate,
-    students: tutor.students,
+    studentLimit: tutor.studentLimit,
+    startDate: tutor.startDate,
+    endDate: tutor.endDate,
+    topicIds: tutor.topics, //chỗ này vẫn còn dạng cặp khóa (id,name) sau này gọi api cần tạo lại mảng id
     status: tutor.status
   }
 
   // xử lý khi cập nhật (sau này GỌI API để cập nhật dữ liệu)
   const handleEditGroup = (data: any) => {
     //api
+    console.log(data)
   }
 
   return (
@@ -37,7 +39,7 @@ export const editGroup = () => {
       mode='edit'
       initialData={existingGroup}
       onCancel={() => navigate('/tutor/dashboard-tutor')}
-      onSubmit={handleEditGroup}
+      onSubmit={(data) => handleEditGroup(data)}
     />
   )
 }

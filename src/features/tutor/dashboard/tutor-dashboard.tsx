@@ -5,10 +5,10 @@ import { LuFolderPlus } from 'react-icons/lu'
 import { useNavigate } from 'react-router'
 
 export const TutorDashboardPage = () => {
-  const nevigate = useNavigate()
+  const navigate = useNavigate()
 
   const handleViewNewGroup = () => {
-    nevigate(`/tutor/create-group`)
+    navigate(`/tutor/create-group`)
   }
 
   return (
@@ -30,11 +30,12 @@ export const TutorDashboardPage = () => {
             <GroupCard
               key={index}
               id={tutor.id}
-              title={tutor.title}
+              groupName={tutor.groupName}
               description={tutor.description}
-              tutor={tutor.tutor}
-              faculty={tutor.faculty}
-              students={tutor.students}
+              tutor={tutor.tutor.userName}
+              faculty={tutor.faculty.name}
+              studentLimit={tutor.studentLimit}
+              status={tutor.status}
             />
           ))}
         </div>

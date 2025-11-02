@@ -5,7 +5,8 @@ export const createGroupForm = () => {
   const navigate = useNavigate()
 
   //xử lý tạo nhóm tư vấn (GỌI API)
-  const handleDeleteGroup = (data: any) => {
+  const handleCreateGroup = (data: any) => {
+    console.log(data)
     //api
   }
 
@@ -13,7 +14,7 @@ export const createGroupForm = () => {
     <GroupForm
       mode='create'
       onCancel={() => navigate('/tutor/dashboard-tutor')}
-      onSubmit={(data) => console.log('Tạo nhóm mới:', data)}
+      onSubmit={(data) => handleCreateGroup(data)}
     />
   )
 }
