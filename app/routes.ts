@@ -13,6 +13,8 @@ export default [
   route('/phong-ctsv/tutor-list', 'routes/phong-ctsv/tutor-list.tsx'),
   route('/phong-dao-tao/dashboard', 'routes/phong-dao-tao/dashboard.tsx'),
   route('/tutor/dashboard-tutor', 'routes/tutor/dashboard-tutor.tsx'),
-  route('/tutor/group-detail', 'routes/tutor/group-detail.tsx'),
+  route('/tutor/create-group', 'routes/tutor/create-group.tsx'),
+  route('/tutor/edit-group/:id', 'routes/tutor/edit-group.tsx'),
+  route('/tutor/group-detail/:id', 'routes/tutor/group-detail.tsx'),
   route('/tutor/profile-tutor', 'routes/tutor/profile-tutor.tsx')
 ] satisfies RouteConfig
