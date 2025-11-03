@@ -1,9 +1,14 @@
 import type { GroupInformationProps } from 'src/types'
 
 export const groupDetail: GroupInformationProps = {
-  title: 'Tư vấn đồ án chuyên ngành Hệ thống thông tin',
-  description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum...',
-  tutor: 'ThS Lê Trần Tấn Phát',
-  faculty: 'Electronic and Telecommunication',
-  studentCount: 7
+  title: 'Capstone Coaching: Information Systems',
+  description:
+    'This group supports seniors who are preparing their information systems capstone with weekly reviews, risk tracking and documentation templates.',
+  tutor: 'Le Tran Tan Phat',
+  faculty: 'Computer Science Faculty',
+  studentCount: 18,
+  focusAreas: ['Information Systems', 'Capstone', 'Project Planning'],
+  scheduleSummary: 'Wed 14:00 - 16:00 | Room H6-201',
+  contactEmail: 'phat.le0106@hcmut.edu.vn',
+  meetingMode: 'Hybrid'
 }

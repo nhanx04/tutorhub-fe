@@ -1,82 +1,225 @@
-import React from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
+import { FaSearch, FaUndoAlt } from 'react-icons/fa'
 
-import TutorCard from 'src/features/student/dashboard/components/GroupCard'
-import { tutorData } from './mock-data/card-data'
-import { FaSearch } from 'react-icons/fa'
+import GroupCard from 'src/features/student/dashboard/components/GroupCard'
+import { studentGroups } from './mock-data/card-data'
 import { MainLayout } from 'src/layouts'
-import { useState } from 'react'
+import type { StudentGroup } from 'src/types'
+import { ConfirmDialog } from 'src/components'
 
-export default function DashboardPage() {
+const DashboardPage: React.FC = () => {
   const [keyword, setKeyword] = useState('')
   const [selectedTutor, setSelectedTutor] = useState('')
+  const [selectedFocusAreas, setSelectedFocusAreas] = useState<string[]>([])
+  const [isFilterApplied, setIsFilterApplied] = useState(false)
+  const [pendingGroup, setPendingGroup] = useState<StudentGroup | null>(null)
+  const [selectedGroup, setSelectedGroup] = useState<StudentGroup | null>(null)
+  const [alertMessage, setAlertMessage] = useState<{ type: 'success' | 'info'; message: string } | null>(null)
 
-  // Lấy danh sách các tutor duy nhất từ dữ liệu mẫu để điền vào dropdown
-  const uniqueTutors = [...new Set(tutorData.map((item) => item.tutor))]
+  useEffect(() => {
+    if (!alertMessage) {
+      return
+    }
+    const timer = setTimeout(() => setAlertMessage(null), 4000)
+    return () => clearTimeout(timer)
+  }, [alertMessage])
 
-  // Hàm xử lý khi bấm nút search (hiện tại chỉ log ra console)
-  const handleSearch = () => {
-    console.log('Searching for:', { keyword, tutor: selectedTutor })
-    // Tại đây, bạn sẽ thêm logic để lọc `tutorData` dựa trên
-    // `keyword` và `selectedTutor` rồi cập nhật lại state hiển thị danh sách
+  const focusAreaOptions = useMemo(() => {
+    const allFocusAreas = studentGroups.flatMap((group) => group.focusAreas)
+    return Array.from(new Set(allFocusAreas)).sort((a, b) => a.localeCompare(b))
+  }, [])
+
+  const tutorOptions = useMemo(() => {
+    const allTutors = studentGroups.map((group) => group.tutor)
+    return Array.from(new Set(allTutors)).sort((a, b) => a.localeCompare(b))
+  }, [])
+
+  const filteredGroups = useMemo(() => {
+    const normalizedKeyword = keyword.trim().toLowerCase()
+
+    return studentGroups.filter((group) => {
+      const matchesKeyword =
+        !normalizedKeyword ||
+        group.title.toLowerCase().includes(normalizedKeyword) ||
+        group.description.toLowerCase().includes(normalizedKeyword)
+
+      const matchesTutor = !selectedTutor || group.tutor === selectedTutor
+
+      const matchesFocusAreas =
+        selectedFocusAreas.length === 0 ||
+        selectedFocusAreas.every((focus) =>
+          group.focusAreas.map((area) => area.toLowerCase()).includes(focus.toLowerCase())
+        )
+
+      return matchesKeyword && matchesTutor && matchesFocusAreas
+    })
+  }, [keyword, selectedTutor, selectedFocusAreas])
+
+  const groupsToRender = isFilterApplied ? filteredGroups : studentGroups
+
+  const handleToggleFocusArea = (area: string) => {
+    setSelectedFocusAreas((prev) => (prev.includes(area) ? prev.filter((item) => item !== area) : [...prev, area]))
+  }
+
+  const handleApplyFilters = () => {
+    setIsFilterApplied(true)
+    setAlertMessage({
+      type: 'info',
+      message: 'Showing groups that match your selected filters.'
+    })
+  }
+
+  const handleResetFilters = () => {
+    setKeyword('')
+    setSelectedTutor('')
+    setSelectedFocusAreas([])
+    setIsFilterApplied(false)
+    setAlertMessage(null)
+  }
+
+  const handleSelectGroup = (group: StudentGroup) => {
+    setPendingGroup(group)
+  }
+
+  const handleConfirmSelection = () => {
+    if (!pendingGroup) {
+      return
+    }
+
+    setSelectedGroup(pendingGroup)
+    setAlertMessage({
+      type: 'success',
+      message: `You selected "${pendingGroup.title}". The tutoring office will be notified.`
+    })
+    setPendingGroup(null)
+  }
+
+  const handleCancelSelection = () => {
+    setPendingGroup(null)
   }
 
   return (
     <MainLayout>
-      <div className='p-6'>
-        <div className='grid grid-cols-1 md:grid-cols-6 gap-4 mb-6'>
-          {/* Ô nhập keyword */}
+      <div className='space-y-6 p-6'>
+        {alertMessage && (
+          <div
+            className={`rounded-md border px-4 py-3 text-sm ${
+              alertMessage.type === 'success'
+                ? 'border-green-200 bg-green-50 text-green-800'
+                : 'border-blue-200 bg-blue-50 text-blue-800'
+            }`}
+          >
+            {alertMessage.message}
+          </div>
+        )}
+
+        {selectedGroup && (
+          <div className='rounded-md border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-900'>
+            <p className='font-semibold'>Selected group</p>
+            <p>
+              {selectedGroup.title} — Tutor {selectedGroup.tutor}. You can still explore and choose a different group if
+              needed.
+            </p>
+          </div>
+        )}
+
+        <div className='mb-2 grid grid-cols-1 gap-4 md:grid-cols-6'>
           <div className='col-span-3'>
             <input
               type='text'
               id='keyword'
               value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
+              onChange={(event) => setKeyword(event.target.value)}
               placeholder='Enter keywords to search'
-              className='w-full px-3 py-2 border border-gray-400 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+              className='w-full rounded-md border border-gray-400 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500'
             />
           </div>
 
-          {/* Dropdown chọn Tutor */}
           <div className='md:col-span-2'>
             <select
               id='tutor'
               value={selectedTutor}
-              onChange={(e) => setSelectedTutor(e.target.value)}
-              className='w-full px-3 py-2 border border-gray-400 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+              onChange={(event) => setSelectedTutor(event.target.value)}
+              className='w-full rounded-md border border-gray-400 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500'
             >
               <option value=''>All Tutors</option>
-              {uniqueTutors.map((tutor, index) => (
-                <option key={index} value={tutor}>
+              {tutorOptions.map((tutor) => (
+                <option key={tutor} value={tutor}>
                   {tutor}
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Nút Search */}
           <div className='flex items-end md:col-span-1'>
             <button
-              onClick={handleSearch}
-              className='cursor-pointer flex w-full items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-white shadow-sm transition hover:bg-indigo-700'
+              onClick={handleApplyFilters}
+              className='flex w-full items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-white shadow-sm transition hover:bg-indigo-700 cursor-pointer'
             >
               <FaSearch />
-              <span>Search</span>
+              <span>Filter</span>
             </button>
           </div>
         </div>
+
+        {focusAreaOptions.length > 0 && (
+          <div className='flex flex-wrap items-center gap-3'>
+            {focusAreaOptions.map((area) => {
+              const isSelected = selectedFocusAreas.includes(area)
+              return (
+                <button
+                  key={area}
+                  onClick={() => handleToggleFocusArea(area)}
+                  className={`rounded-full border px-4 py-1 text-sm transition cursor-pointer ${
+                    isSelected ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-gray-300 text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  {area}
+                </button>
+              )
+            })}
+            <button
+              onClick={handleResetFilters}
+              className='flex items-center gap-2 rounded-full border border-gray-300 px-4 py-1 text-sm text-gray-600 transition hover:bg-gray-100 cursor-pointer'
+            >
+              <FaUndoAlt /> Reset
+            </button>
+          </div>
+        )}
       </div>
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-        {tutorData.map((tutor, index) => (
-          <TutorCard
-            key={index}
-            title={tutor.title}
-            description={tutor.description}
-            tutor={tutor.tutor}
-            faculty={tutor.faculty}
-            students={tutor.students}
-          />
-        ))}
+
+      <div className='grid grid-cols-1 gap-6 px-6 pb-6 md:grid-cols-2 lg:grid-cols-3'>
+        {groupsToRender.length === 0 && isFilterApplied ? (
+          <div className='col-span-full rounded-md border border-dashed border-gray-300 bg-white p-8 text-center text-gray-500'>
+            No groups match your filters. Try removing a focus area or searching with different keywords.
+          </div>
+        ) : (
+          groupsToRender.map((group) => (
+            <GroupCard key={group.id} group={group} isSelected={selectedGroup?.id === group.id} onSelect={handleSelectGroup} />
+          ))
+        )}
       </div>
+
+      <ConfirmDialog
+        isOpen={Boolean(pendingGroup)}
+        onClose={handleCancelSelection}
+        onConfirm={handleConfirmSelection}
+        title='Confirm group selection'
+      >
+        {pendingGroup ? (
+          <div className='space-y-2 text-sm text-gray-700'>
+            <p>
+              You are about to join <span className='font-semibold'>{pendingGroup.title}</span> led by {pendingGroup.tutor}.
+            </p>
+            <p>
+              The system will store this choice, notify the tutoring office and sync it with related services. Do you want to
+              continue?
+            </p>
+          </div>
+        ) : null}
+      </ConfirmDialog>
     </MainLayout>
   )
 }
+
+export default DashboardPage

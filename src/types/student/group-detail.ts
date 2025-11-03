@@ -16,14 +16,26 @@ export interface ConsultationSession {
 
     date: string
 
-    location: string
+    location?: string
 
     meetingLink?: string
   }
 
-  students: string
+  capacity: {
+    registered: number
+    total: number
+  }
 
-  status: 'Allow Register' | 'Completed'
+  status: 'Allow Register' | 'Registered' | 'Completed' | 'Full'
+
+  isRegistered: boolean
+
+  cancellationDeadline?: string
+
+  feedback?: {
+    rating: number
+    comment: string
+  }
 }
 
 export interface GroupInformationProps {
@@ -36,4 +48,18 @@ export interface GroupInformationProps {
   faculty: string
 
   studentCount: number
+
+  focusAreas?: string[]
+
+  scheduleSummary?: string
+
+  contactEmail?: string
+
+  meetingMode?: 'Onsite' | 'Online' | 'Hybrid'
+
+  onSelectGroup?: () => void
+
+  isGroupSelected?: boolean
+
+  isSelectionDisabled?: boolean
 }
