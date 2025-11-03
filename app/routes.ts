@@ -6,6 +6,7 @@ export default [
   route('/library', 'routes/library.tsx'),
   route('/dashboard', 'routes/dashboard.tsx'),
   route('/student/group-detail', 'routes/student/group-detail.tsx'),
+  route('/student/group-explorer', 'routes/student/group-explorer.tsx'),
   route('/student/profile', 'routes/student/profile-student.tsx'),
   route('/faculty/student-assessment', 'routes/faculty/student-assessment.tsx'),
   route('/phong-ctsv/student-list', 'routes/phong-ctsv/student-list.tsx'),
