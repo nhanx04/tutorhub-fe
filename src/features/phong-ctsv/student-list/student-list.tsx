@@ -59,8 +59,8 @@ export const StudentListPage = () => {
             <select
               value={selectedTopic}
               onChange={handleTopicChange}
-              disabled={!selectedFaculty}
-              className="w-full px-3 py-2 border rounded-lg shadow-sm text-sm"
+              disabled={!selectedFaculty && availableTopics.length === 0}
+              className={`w-full px-3 py-2 border rounded-lg shadow-sm text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white transition duration-150 ${(!selectedFaculty || availableTopics.length === 0) ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : ''}`}
             >
               <option value="">--- All Topics ---</option>
               {availableTopics.map((topic, index) => (
