@@ -15,5 +15,6 @@ export default [
   route('/tutor/create-group', 'routes/tutor/create-group.tsx'),
   route('/tutor/edit-group/:id', 'routes/tutor/edit-group.tsx'),
   route('/tutor/group-detail/:id', 'routes/tutor/group-detail.tsx'),
+  route('/tutor/group-detail/:id/feedback', 'routes/tutor/group-feedback.tsx'),
   route('/tutor/profile-tutor', 'routes/tutor/profile-tutor.tsx')
 ] satisfies RouteConfig

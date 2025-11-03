@@ -75,7 +75,9 @@ export const GroupDetailTutorPage = () => {
           </div>
         </div>
 
-        {sessionData && sessionData.sessions.map((s) => <ConsultationCard key={s.sid} session={s} />)}
+        {sessionData && sessionData.sessions.map((s) => (
+          <ConsultationCard key={s.sid} session={s} groupId={sessionData.id} />
+        ))}
       </div>
     </MainLayout>
   )

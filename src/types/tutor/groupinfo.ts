@@ -36,6 +36,7 @@ export interface TimeAndLocation {
 
 export interface ConsulCardProps {
   session: Session
+  groupId?: number
 }
 
 export interface NewConsul {

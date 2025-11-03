@@ -15,6 +15,7 @@
   "dependencies": {
     "@react-router/node": "^7.7.1",
     "@react-router/serve": "^7.7.1",
+    "esbuild": "^0.25.12",
     "isbot": "^5.1.27",
     "jspdf": "^3.0.3",
     "jspdf-autotable": "^5.0.2",
