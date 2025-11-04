@@ -1,5 +1,5 @@
 import React from 'react'
-import { FaHome, FaUserCog, FaBook } from 'react-icons/fa'
+import { FaHome, FaUserCog, FaBook, FaSearch } from 'react-icons/fa'
 import logo from '../../asset/images/TutorHub_favicon.png'
 import { useNavigate, useLocation } from 'react-router'
 
@@ -29,6 +29,13 @@ const Sidebar: React.FC = () => {
       icon: <FaUserCog />,
       path: '/student/profile',
       active: currentPath === '/student/profile'
+    },
+    {
+      id: 'group-explorer',
+      label: 'Group Explorer',
+      icon: <FaSearch />,
+      path: '/student/group-explorer',
+      active: currentPath === '/student/group-explorer'
     },
     {
       id: 'library',
