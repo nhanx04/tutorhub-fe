@@ -5,7 +5,7 @@ export type StatRow = {
   student?: number;
   group?: number;
   consultation?: number;
-  date: string; // ISO yyyy-mm-dd dùng để lọc
+  date: string; 
 };
 
 // ví dụ ngày rải từ Jan → Jun 2025

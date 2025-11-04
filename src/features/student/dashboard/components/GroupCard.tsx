@@ -1,50 +1,55 @@
 import React from 'react'
-import type { GroupCardProps } from 'src/types'
+import type { DashboardGroupCardProps } from 'src/types'
 import { FaRegEye } from 'react-icons/fa'
 import { useNavigate } from 'react-router'
 
-const GroupCard: React.FC<GroupCardProps> = ({ title, description, tutor, faculty, students, isActive = true }) => {
-  const nevigate = useNavigate()
+const statusVariant: Record<'Active' | 'Inactive', string> = {
+  Active: 'bg-green-100 text-green-700',
+  Inactive: 'bg-red-100 text-red-700'
+}
+
+const GroupCard: React.FC<DashboardGroupCardProps> = ({ group, onViewDetails }) => {
+  const navigate = useNavigate()
+
   const handleViewDetails = () => {
-    nevigate(`/student/group-detail`)
+    if (onViewDetails) {
+      onViewDetails(group)
+      return
+    }
+    navigate('/student/group-detail', { state: { groupId: group.id } })
   }
 
   return (
-    <div className='flex flex-col h-full bg-white rounded-lg shadow-sm border border-gray-300 p-6 hover:shadow-md transition-shadow'>
-      {/* Active Badge */}
-      {isActive && (
-        <div className='flex justify-end mb-4'>
-          <span className='bg-green-500 text-white text-xs px-3 py-1 rounded-full'>Active</span>
-        </div>
-      )}
-
-      <div className='flex-grow'>
-        {/* Title */}
-        <h3 className='text-lg font-semibold text-gray-800 mb-3 line-clamp-2'>{title}</h3>
-
-        {/* Description */}
-        <p className='text-gray-600 text-sm mb-4 line-clamp-3'>{description}</p>
+    <div className='flex h-full flex-col rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md'>
+      <div className='mb-4 flex items-center justify-between'>
+        <span className='text-sm font-semibold text-gray-800'>{group.title}</span>
+        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusVariant[group.status]}`}>
+          {group.status}
+        </span>
       </div>
 
-      {/* Details */}
-      <div className='space-y-2 mb-6'>
-        <div className='flex items-center space-x-2 text-sm text-gray-600'>
-          <span>Tutor: {tutor}</span>
+      <p className='mb-4 text-sm text-gray-600'>{group.description}</p>
+
+      <div className='mt-auto space-y-2 text-sm text-gray-600'>
+        <div className='flex items-center gap-2'>
+          <span className='font-medium text-gray-700'>Tutor:</span>
+          <span>{group.tutor}</span>
         </div>
-        <div className='flex items-center space-x-2 text-sm text-gray-600'>
-          <span>Faculty: {faculty}</span>
+        <div className='flex items-center gap-2'>
+          <span className='font-medium text-gray-700'>Faculty:</span>
+          <span>{group.faculty}</span>
         </div>
-        <div className='flex items-center space-x-2 text-sm text-gray-600'>
-          <span>Student: {students}</span>
+        <div className='flex items-center gap-2'>
+          <span className='font-medium text-gray-700'>Students:</span>
+          <span>{group.students}</span>
         </div>
       </div>
 
-      {/* View Details Button */}
       <button
         onClick={handleViewDetails}
-        className='w-full py-2 px-4 border border-blue-600 text-blue-600 rounded-md hover:bg-blue-600 duration-200 ease-in-out hover:text-white transition-colors cursor-pointer'
+        className='mt-6 flex items-center justify-center gap-2 rounded-md border border-blue-600 px-4 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-600 hover:text-white cursor-pointer'
       >
-        <FaRegEye className='mr-2 inline-block' /> View details
+        <FaRegEye /> View details
       </button>
     </div>
   )

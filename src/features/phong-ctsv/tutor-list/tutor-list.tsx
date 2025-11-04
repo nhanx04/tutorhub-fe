@@ -3,9 +3,6 @@ import Table, { type Column } from "src/features/faculty/student-assessment/comp
 
 import { FiDownload, FiSearch } from "react-icons/fi";
 import { CiFilter, CiCalendar } from "react-icons/ci";
-import { IoArrowForwardOutline } from "react-icons/io5";
-
-import type { TutorSummary } from "./mockdata/tutor-data";
 import { useTutorList } from "./components/useTutorList";
 import { exportTutorListPdf } from "./components/exportTutorListPdf";
 
@@ -18,25 +15,8 @@ export const TutorListPage = () => {
     setSelectedFaculty, setSelectedTutor,
     setDateFrom, setDateTo,
     handleSearch,
+    columns
   } = useTutorList();
-
-  const columns: Column<TutorSummary>[] = [
-    { header: 'Tutor ID', accessor: 'tutorId', width: '10%' },
-    { header: 'Tutor Name', accessor: 'tutor', width: '20%' },
-    { header: 'Faculties Taught', accessor: 'faculties', width: '35%' },
-    { header: 'Total Groups', accessor: 'totalGroups', width: '10%', textAlign: 'center' },
-    { header: 'Total Sessions', accessor: 'totalSessions', width: '15%', textAlign: 'center' },
-    {
-      header: 'View',
-      width: '10%',
-      textAlign: 'center',
-      render: (row) => (
-        <button className='flex items-center justify-center mx-auto gap-1 rounded-full bg-cyan-500 px-3 py-1.5 text-white shadow-md hover:bg-cyan-600 hover:scale-105'>
-          <IoArrowForwardOutline size={16} />
-        </button>
-      ),
-    },
-  ];
 
   return (
     <MainLayout>

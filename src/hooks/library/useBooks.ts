@@ -1,12 +1,6 @@
 import { useMemo, useState } from "react";
 import type { Book } from "src/types/library"; 
 
-/**
- * Quản lý tìm kiếm + lọc danh sách sách cho trang Library.
- * - State: query
- * - Lọc theo title/author/description (case-insensitive)
- * - Trả về filtered + count/total + reset()
- */
 export function useBooks(initialBooks: Book[]) {
   const [query, setQuery] = useState("");
 

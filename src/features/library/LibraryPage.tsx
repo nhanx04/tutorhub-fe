@@ -1,8 +1,7 @@
-// src/features/library/dashboard/LibraryPage.tsx
 import SearchInput from "./components/SearchInput";
 import BookGrid from "./components/BookGrid";
 import { BOOKS } from "./mock-data/books";
-import { useBooks } from "src/hooks/library/useBooks";      // <-- hook dùng chung
+import { useBooks } from "src/hooks/library/useBooks";      
 import type { Book } from "src/types/library";
 import { useNavigate } from "react-router-dom";
 import { MainLayout } from "src/layouts";

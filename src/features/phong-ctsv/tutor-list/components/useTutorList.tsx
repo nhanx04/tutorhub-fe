@@ -1,8 +1,9 @@
 import { useMemo, useCallback, useState, useEffect } from "react";
 import type { StudentRow, TutorSummary } from "../mockdata/tutor-data";
 import { tutorDataa, TUTOR_ID_MAP } from "../mockdata/tutor-data";
+import { IoArrowForwardOutline } from "react-icons/io5";
+import type { Column } from "src/features/faculty/student-assessment/components/Table";
 
-// ✅ Hàm tổng hợp dữ liệu tutor
 const aggregateTutorData = (students: StudentRow[]): TutorSummary[] => {
   type Temp = Omit<TutorSummary, 'faculties' | 'numFaculties'> & { faculties: Set<string> };
 
@@ -72,21 +73,36 @@ export const useTutorList = () => {
   const handleSearch = () => {
     applyFilter(selectedFaculty, selectedTutor);
   };
-
+   const columns: Column<TutorSummary>[] = [
+    { header: 'Tutor ID', accessor: 'tutorId', width: '10%' },
+    { header: 'Tutor Name', accessor: 'tutor', width: '20%' },
+    { header: 'Faculties Taught', accessor: 'faculties', width: '35%' },
+    { header: 'Total Groups', accessor: 'totalGroups', width: '10%', textAlign: 'center' },
+    { header: 'Total Sessions', accessor: 'totalSessions', width: '15%', textAlign: 'center' },
+    {
+      header: 'View',
+      width: '10%',
+      textAlign: 'center',
+      render: (row) => (
+        <button className='flex items-center justify-center mx-auto gap-1 rounded-full bg-cyan-500 px-3 py-1.5 text-white shadow-md hover:bg-cyan-600 hover:scale-105'>
+          <IoArrowForwardOutline size={16} />
+        </button>
+      ),
+    },
+  ];
   return {
     filteredData,
     uniqueFaculties,
     uniqueTutors,
-
     selectedFaculty,
     selectedTutor,
     dateFrom,
     dateTo,
-
     setSelectedFaculty,
     setSelectedTutor,
     setDateFrom,
     setDateTo,
     handleSearch,
+    columns,
   };
 };
