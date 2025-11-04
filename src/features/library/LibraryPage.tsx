@@ -1,4 +1,3 @@
-// src/features/library/dashboard/LibraryPage.tsx
 import SearchInput from "./components/SearchInput";
 import BookGrid from "./components/BookGrid";
 import { BOOKS } from "./mock-data/books";

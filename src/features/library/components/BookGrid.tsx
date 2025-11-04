@@ -7,18 +7,18 @@ type Book = {
   title: string;
   author: string;
   description: string;
-  color?: typeof VARIANTS[number]; // optional, nếu có thì ưu tiên
+  color?: typeof VARIANTS[number];
 };
 
 type Props = { books: Book[]; onView?: (book: Book) => void };
 
-// gán màu không lặp trong phạm vi danh sách hiện tại
+
 function assignUniqueVariants(books: Book[]) {
   const map = new Map<string | number, typeof VARIANTS[number]>();
   for (let i = 0; i < books.length; i++) {
     const b = books[i];
-    const v = b.color ?? VARIANTS[i]; // đủ 12 màu cho 12 mục đầu, không lặp
-    map.set(b.id, v ?? VARIANTS[i % VARIANTS.length]); // phòng trường hợp >12
+    const v = b.color ?? VARIANTS[i]; 
+    map.set(b.id, v ?? VARIANTS[i % VARIANTS.length]); 
   }
   return map;
 }
@@ -38,7 +38,7 @@ export default function BookGrid({ books, onView }: Props) {
             author={b.author}
             description={b.description}
             variant={variant}
-            onView={() => onView?.({ ...b, color: variant })} // truyền màu ra ngoài
+            onView={() => onView?.({ ...b, color: variant })} 
           />
         );
       })}

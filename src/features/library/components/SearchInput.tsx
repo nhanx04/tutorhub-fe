@@ -1,4 +1,3 @@
-// src/features/library/components/SearchInput.tsx
 import type { InputHTMLAttributes } from "react";
 
 type Props = InputHTMLAttributes<HTMLInputElement>;

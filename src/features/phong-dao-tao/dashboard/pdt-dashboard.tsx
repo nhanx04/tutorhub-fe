@@ -16,7 +16,6 @@ export const PDTDashboardPage = () => {
     to: '2025-12-31',
   });
 
-  // lọc bảng theo range
   const filteredFaculty = useMemo(
     () => facultyStats.filter((r) => inRangeInclusive(r.date, range.from, range.to)),
     [range],
@@ -26,7 +25,6 @@ export const PDTDashboardPage = () => {
     [range],
   );
 
-  // (tuỳ ý) lọc sales theo tháng trong khoảng — ở đây giữ nguyên mock
   const filteredSales = useMemo(() => salesData, [range]);
 
   const badge = `${toBadge(range.from)} - ${toBadge(range.to)}`;
