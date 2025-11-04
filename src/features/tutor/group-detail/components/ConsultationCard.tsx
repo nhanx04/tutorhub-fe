@@ -4,10 +4,35 @@ import { MdOutlineFeedback } from 'react-icons/md'
 import { RxCrossCircled } from 'react-icons/rx'
 import { useState } from 'react'
 import Modal from '../../dashboard/components/PopupNoti'
+import { StudentFeedbackModal } from './StudentFeedbackModal'
+import { useNavigate } from 'react-router'
 
-export const ConsultationCard: React.FC<ConsulCardProps> = ({ session }) => {
+// Mock data for testing - replace with API call later
+const mockStudents = [
+  {
+    id: "123123",
+    name: "Nguyễn Trọng Nhân",
+    email: "nhan.nguyenxxx04@hcmut.edu.vn",
+    score: 9,
+    feedback: "Học tốt",
+    attendance: true
+  },
+  {
+    id: "123124",
+    name: "Tran Thi Thuy",
+    email: "thuy.tranxx@hcmut.edu.vn",
+    score: 8,
+    feedback: "Học tốt",
+    attendance: false
+  }
+];
+
+export const ConsultationCard: React.FC<ConsulCardProps> = ({ session, groupId }) => {
+  const navigate = useNavigate()
   const { sid, generalDetails, timeAndLocation, students, status } = session
   const [showCancel, setShowCancel] = useState(false)
+  const [showFeedback, setShowFeedback] = useState(false)
+  
   const statusColors = {
     'Allow Register': 'bg-yellow-300 text-yellow-800',
     Completed: 'bg-green-400 text-green-800',
@@ -19,9 +44,20 @@ export const ConsultationCard: React.FC<ConsulCardProps> = ({ session }) => {
     console.log('sid:', sid)
     setShowCancel(false)
   }
-  //này ko rõ là tutor xem feedback của sinh viên hay phòng đào tạo hay ntn ?
-  const handleFeedback = ({ sid }: { sid: string | number }) => {
-    //GỌI API xử lý
+
+  const handleFeedback = () => {
+    // navigate to a dedicated feedback page for this group/session
+    if (groupId) {
+      navigate(`/tutor/group-detail/${groupId}/feedback?sid=${sid}`)
+    } else {
+      // fallback: open modal if groupId not available
+      setShowFeedback(true)
+    }
+  }
+
+  const handleSaveFeedback = (feedbackData: typeof mockStudents) => {
+    // Call API to save feedback data
+    console.log('Saving feedback:', feedbackData)
   }
 
   return (
@@ -35,6 +71,12 @@ export const ConsultationCard: React.FC<ConsulCardProps> = ({ session }) => {
           icon={<RxCrossCircled size={100} className='text-red-600' />}
         />
       )}
+      <StudentFeedbackModal
+        isOpen={showFeedback}
+        onClose={() => setShowFeedback(false)}
+        students={mockStudents}
+        onSave={handleSaveFeedback}
+      />
       <div className='bg-white px-5 py-5 border-b border-gray-300'>
         <div className='flex items-start text-sm lg:text-base gap-4'>
           {/* sid và thông tin sơ bộ */}
@@ -95,7 +137,7 @@ export const ConsultationCard: React.FC<ConsulCardProps> = ({ session }) => {
           <div className='flex items-center justify-center w-[13%] min-w-[90px] text-center text-white text-base'>
             {status === 'Completed' && (
               <button
-                onClick={() => handleFeedback?.({ sid })}
+                onClick={handleFeedback}
                 className='flex items-center gap-1 bg-blue-800 w-25 px-2 py-1 rounded-md border-2 border-blue-800 hover:bg-white hover:text-blue-800'
               >
                 <MdOutlineFeedback size={20}></MdOutlineFeedback>
