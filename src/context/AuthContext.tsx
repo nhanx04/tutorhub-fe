@@ -1,10 +1,10 @@
-import React, { createContext, useState, useEffect, type ReactNode } from 'react'
+import { createContext, useState, useEffect, type ReactNode } from 'react'
 import type { User, Credentials } from '../types'
 import { authService } from '../services/authService'
 
 interface AuthContextType {
   user: User | null
-  login: (credential: Credentials) => Promise<void>
+  login: (credential: Credentials) => Promise<User>
   logout: () => void
   isAuthenticated: boolean
 }
@@ -20,10 +20,9 @@ export function AuthProvider({ children }: AuthProdivderProps) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Check for token and user data in localStorage on initial load
-    const token = authService.getToken()
+    // Load user from localStorage on initial load (hardcoded mode)
     const storedUser = localStorage.getItem('user')
-    if (token && storedUser) {
+    if (storedUser) {
       try {
         setUser(JSON.parse(storedUser))
       } catch (error) {
@@ -35,15 +34,28 @@ export function AuthProvider({ children }: AuthProdivderProps) {
     setLoading(false)
   }, [])
 
-  const login = async (credential: Credentials) => {
-    // First, get the token from login
-    const loginResponse = await authService.login(credential)
-    authService.setToken(loginResponse.token)
+  // Hardcoded login: derive role from email and set a fake token
+  const login = async (credential: Credentials): Promise<User> => {
+    const email = credential.email.toLowerCase()
 
-    // Then, get user info using the token
-    const user = await authService.getCurrentUser()
-    localStorage.setItem('user', JSON.stringify(user)) // Store user data
-    setUser(user)
+    let role: User['role'] = 'student'
+    if (email.includes('tutor')) role = 'tutor'
+    else if (email.includes('faculty')) role = 'faculty'
+    else if (email.includes('pctsv')) role = 'pctsv'
+    else if (email.includes('pdt')) role = 'pdt'
+
+    const fakeUser: User = {
+      user_id: `hardcoded-${role}`,
+      name: email.split('@')[0] || 'User',
+      email,
+      role
+    }
+
+    // set a fake token to keep existing flows that rely on token
+    authService.setToken('hardcoded-token')
+    localStorage.setItem('user', JSON.stringify(fakeUser))
+    setUser(fakeUser)
+    return fakeUser
   }
 
   const logout = () => {
