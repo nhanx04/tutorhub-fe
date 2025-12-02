@@ -1,8 +1,8 @@
 import type { MetaFunction } from 'react-router'
-import { editGroup } from 'src/features'
+import { EditGroupPage } from 'src/features/tutor/dashboard'
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Edit group' }, { name: '', content: 'Edit group form' }]
 }
 
-export default editGroup
+export default EditGroupPage

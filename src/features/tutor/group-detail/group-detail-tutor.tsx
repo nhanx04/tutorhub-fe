@@ -2,25 +2,60 @@ import { MainLayout } from 'src/layouts'
 import { GroupInformation } from './components/GroupInformation'
 import { GrCircleInformation } from 'react-icons/gr'
 import { FaListUl } from 'react-icons/fa'
-import { consultationData } from './mock-data/session-data'
+import { consultationData } from './mock-data/session-data' // This is still mock data
 import { ConsultationCard } from './components/ConsultationCard'
-import { tutorCardData } from '../dashboard/mock-data/card_data'
 import { useParams } from 'react-router'
-import type { Session } from 'src/types'
+import { useEffect, useState } from 'react'
+import { groupService } from 'src/services/groupService'
+import type { Group, Session } from 'src/types'
 import ErrorFallback from './components/ErrorFallBack'
 
 export const GroupDetailTutorPage = () => {
   const { id } = useParams<{ id: string }>()
-  const numericId = Number(id)
+  const [group, setGroup] = useState<Group | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  // tìm tutor có id tương ứng (GỌI API sau này)
-  //có thể lấy thẳng consultationData bỏ qua bước xác minh Tutor
-  const tutor = tutorCardData.find((item) => item.id === numericId)
-  //sau này GỌI API để lấy danh sách buổi tư vấn trong 1 nhóm
+  // Mock data for consultation sessions, as API is not provided yet
   const sessionData = consultationData[0]
 
-  if (!tutor) {
-    return <ErrorFallback message='Không có tutor phù hợp với ID!' />
+  useEffect(() => {
+    if (!id) {
+      setError('Group ID is missing.')
+      setLoading(false)
+      return
+    }
+
+    const fetchGroup = async () => {
+      try {
+        setLoading(true)
+        const data = await groupService.getGroupById(id)
+        setGroup(data)
+        setError(null)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch group details.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchGroup()
+  }, [id])
+
+  if (loading) {
+    return (
+      <MainLayout>
+        <p>Loading group details...</p>
+      </MainLayout>
+    )
+  }
+
+  if (error) {
+    return <ErrorFallback message={error} />
+  }
+
+  if (!group) {
+    return <ErrorFallback message='Group not found.' />
   }
 
   if (!sessionData) {
@@ -34,13 +69,7 @@ export const GroupDetailTutorPage = () => {
           <GrCircleInformation size={26} className='mt-0.5' />
           <h1>Group Information</h1>
         </div>
-        {
-          <GroupInformation
-            id={sessionData.id}
-            groupName={sessionData.groupName}
-            description={sessionData.groupDescription}
-          />
-        }
+        <GroupInformation id={group.id} groupName={group.groupName} description={group.description} />
       </div>
 
       <div className='flex flex-col px-6'>
@@ -75,9 +104,10 @@ export const GroupDetailTutorPage = () => {
           </div>
         </div>
 
-        {sessionData && sessionData.sessions.map((s) => (
-          <ConsultationCard key={s.sid} session={s} groupId={sessionData.id} />
-        ))}
+        {sessionData &&
+          sessionData.sessions.map((s: Session) => (
+            <ConsultationCard key={s.sid} session={s} groupId={sessionData.id} />
+          ))}
       </div>
     </MainLayout>
   )
