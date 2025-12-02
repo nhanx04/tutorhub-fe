@@ -6,43 +6,57 @@ import { useState } from 'react'
 import Modal from '../../dashboard/components/PopupNoti'
 import { StudentFeedbackModal } from './StudentFeedbackModal'
 import { useNavigate } from 'react-router'
+import { consultationService } from 'src/services/consultationService'
 
 // Mock data for testing - replace with API call later
 const mockStudents = [
   {
-    id: "123123",
-    name: "Nguyễn Trọng Nhân",
-    email: "nhan.nguyenxxx04@hcmut.edu.vn",
+    id: '123123',
+    name: 'Nguyễn Trọng Nhân',
+    email: 'nhan.nguyenxxx04@hcmut.edu.vn',
     score: 9,
-    feedback: "Học tốt",
+    feedback: 'Học tốt',
     attendance: true
   },
   {
-    id: "123124",
-    name: "Tran Thi Thuy",
-    email: "thuy.tranxx@hcmut.edu.vn",
+    id: '123124',
+    name: 'Tran Thi Thuy',
+    email: 'thuy.tranxx@hcmut.edu.vn',
     score: 8,
-    feedback: "Học tốt",
+    feedback: 'Học tốt',
     attendance: false
   }
-];
+]
 
 export const ConsultationCard: React.FC<ConsulCardProps> = ({ session, groupId }) => {
   const navigate = useNavigate()
   const { sid, generalDetails, timeAndLocation, students, status } = session
   const [showCancel, setShowCancel] = useState(false)
   const [showFeedback, setShowFeedback] = useState(false)
-  
-  const statusColors = {
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const statusColors: Record<string, string> = {
     'Allow Register': 'bg-yellow-300 text-yellow-800',
     Completed: 'bg-green-400 text-green-800',
     Canceled: 'bg-red-400 text-red-800'
   }
 
-  const handleCancel = () => {
-    //GỌI API để xóa buổi tư vấn
-    console.log('sid:', sid)
-    setShowCancel(false)
+  const handleCancel = async () => {
+    try {
+      setIsDeleting(true)
+      // Call API to delete the consultation
+      await consultationService.deleteConsultation(sid)
+      console.log('Consultation deleted successfully:', sid)
+      setShowCancel(false)
+      // Optionally: refresh the page or update the parent component
+      window.location.reload()
+    } catch (error) {
+      console.error('Error deleting consultation:', error)
+      alert('Failed to delete consultation. Please try again.')
+      setShowCancel(false)
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   const handleFeedback = () => {
@@ -147,10 +161,11 @@ export const ConsultationCard: React.FC<ConsulCardProps> = ({ session, groupId }
             {status === 'Allow Register' && (
               <button
                 onClick={() => setShowCancel?.(true)}
-                className='flex items-center gap-1 bg-red-800 w-25 px-2 py-1 rounded-md border-2 border-red-800 hover:bg-white hover:text-red-800'
+                disabled={isDeleting}
+                className='flex items-center gap-1 bg-red-800 w-25 px-2 py-1 rounded-md border-2 border-red-800 hover:bg-white hover:text-red-800 disabled:opacity-50'
               >
                 <RxCrossCircled size={15}></RxCrossCircled>
-                <p>Cancel</p>
+                <p>{isDeleting ? 'Deleting...' : 'Cancel'}</p>
               </button>
             )}
             {status === 'Canceled' && <p></p>}

@@ -2,22 +2,45 @@ import { MainLayout } from 'src/layouts'
 import { GroupInformation } from './components/GroupInformation'
 import { GrCircleInformation } from 'react-icons/gr'
 import { FaListUl } from 'react-icons/fa'
-import { consultationData } from './mock-data/session-data' // This is still mock data
 import { ConsultationCard } from './components/ConsultationCard'
 import { useParams } from 'react-router'
 import { useEffect, useState } from 'react'
 import { groupService } from 'src/services/groupService'
-import type { Group, Session } from 'src/types'
+import { consultationService } from 'src/services/consultationService'
+import type { Group, Consultation, Session } from 'src/types'
 import ErrorFallback from './components/ErrorFallBack'
+
+// Helper function to convert Consultation to Session format
+const convertConsultationToSession = (consultation: Consultation): Session => {
+  return {
+    sid: consultation.id,
+    generalDetails: {
+      topic: consultation.topic,
+      description: consultation.description,
+      links: [consultation.locationLink]
+    },
+    timeAndLocation: {
+      time: consultation.consultationTime,
+      date: consultation.consultationDate,
+      location: consultation.type === 'OFFLINE' ? consultation.locationLink : undefined,
+      meetingLink: consultation.type === 'ONLINE' ? consultation.locationLink : undefined
+    },
+    students: '0/0', // This should come from API if available
+    status:
+      consultation.status === 'SCHEDULED'
+        ? 'Allow Register'
+        : consultation.status === 'COMPLETED'
+          ? 'Completed'
+          : 'Canceled'
+  }
+}
 
 export const GroupDetailTutorPage = () => {
   const { id } = useParams<{ id: string }>()
   const [group, setGroup] = useState<Group | null>(null)
+  const [consultations, setConsultations] = useState<Consultation[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
-  // Mock data for consultation sessions, as API is not provided yet
-  const sessionData = consultationData[0]
 
   useEffect(() => {
     if (!id) {
@@ -26,11 +49,15 @@ export const GroupDetailTutorPage = () => {
       return
     }
 
-    const fetchGroup = async () => {
+    const fetchGroupAndConsultations = async () => {
       try {
         setLoading(true)
-        const data = await groupService.getGroupById(id)
-        setGroup(data)
+        const groupData = await groupService.getGroupById(id)
+        setGroup(groupData)
+
+        // Fetch consultations for this group
+        const consultationsData = await consultationService.getConsultationsByGroup(parseInt(id))
+        setConsultations(consultationsData)
         setError(null)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch group details.')
@@ -39,7 +66,7 @@ export const GroupDetailTutorPage = () => {
       }
     }
 
-    fetchGroup()
+    fetchGroupAndConsultations()
   }, [id])
 
   if (loading) {
@@ -56,10 +83,6 @@ export const GroupDetailTutorPage = () => {
 
   if (!group) {
     return <ErrorFallback message='Group not found.' />
-  }
-
-  if (!sessionData) {
-    return <ErrorFallback message='Tutor chưa có tạo buổi tư vấn nào, vui lòng thử lại sau!' />
   }
 
   return (
@@ -104,10 +127,18 @@ export const GroupDetailTutorPage = () => {
           </div>
         </div>
 
-        {sessionData &&
-          sessionData.sessions.map((s: Session) => (
-            <ConsultationCard key={s.sid} session={s} groupId={sessionData.id} />
-          ))}
+        {/* Consultations List */}
+        {consultations.length === 0 ? (
+          <div className='p-6 text-center text-gray-500'>Tutor chưa có tạo buổi tư vấn nào, vui lòng thử lại sau!</div>
+        ) : (
+          consultations.map((consultation) => (
+            <ConsultationCard
+              key={consultation.id}
+              session={convertConsultationToSession(consultation)}
+              groupId={group.id}
+            />
+          ))
+        )}
       </div>
     </MainLayout>
   )
