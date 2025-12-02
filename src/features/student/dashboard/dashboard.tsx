@@ -1,24 +1,55 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { FaSearch } from 'react-icons/fa'
 
 import GroupCard from 'src/features/student/dashboard/components/GroupCard'
-import { registeredGroups } from './mock-data/registered-groups'
 import { MainLayout } from 'src/layouts'
-import type { RegisteredGroup } from 'src/types'
+import type { RegisteredGroup, Group } from 'src/types'
+import { groupService } from 'src/services/groupService'
 
 const DashboardPage: React.FC = () => {
+  const [groups, setGroups] = useState<RegisteredGroup[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [keyword, setKeyword] = useState('')
   const [selectedTutor, setSelectedTutor] = useState('')
 
-  const tutorOptions = useMemo(() => {
-    const tutors = registeredGroups.map((group) => group.tutor)
-    return Array.from(new Set(tutors)).sort((a, b) => a.localeCompare(b))
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        setLoading(true)
+        const data: Group[] = await groupService.getMyGroups()
+
+        const formattedGroups: RegisteredGroup[] = data.map((group) => ({
+          id: group.id,
+          title: group.groupName,
+          description: group.description,
+          tutor: group.tutor.userName,
+          faculty: group.faculty.name,
+          students: group.studentLimit, // API does not provide current student count, using limit as placeholder
+          status: group.status === '1' ? 'Active' : 'Inactive'
+        }))
+
+        setGroups(formattedGroups)
+        setError(null)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch groups.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchGroups()
   }, [])
+
+  const tutorOptions = useMemo(() => {
+    const tutors = groups.map((group) => group.tutor)
+    return Array.from(new Set(tutors)).sort((a, b) => a.localeCompare(b))
+  }, [groups])
 
   const filteredGroups = useMemo(() => {
     const normalizedKeyword = keyword.trim().toLowerCase()
 
-    return registeredGroups.filter((group) => {
+    return groups.filter((group) => {
       const matchesKeyword =
         !normalizedKeyword ||
         group.title.toLowerCase().includes(normalizedKeyword) ||
@@ -28,7 +59,7 @@ const DashboardPage: React.FC = () => {
 
       return matchesKeyword && matchesTutor
     })
-  }, [keyword, selectedTutor])
+  }, [groups, keyword, selectedTutor])
 
   return (
     <MainLayout>
@@ -78,7 +109,11 @@ const DashboardPage: React.FC = () => {
       </div>
 
       <div className='grid grid-cols-1 gap-6 px-6 pb-6 md:grid-cols-2 lg:grid-cols-3'>
-        {filteredGroups.length === 0 ? (
+        {loading ? (
+          <div className='col-span-full text-center'>Loading...</div>
+        ) : error ? (
+          <div className='col-span-full text-center text-red-500'>{error}</div>
+        ) : filteredGroups.length === 0 ? (
           <div className='col-span-full rounded-md border border-dashed border-gray-300 bg-white p-8 text-center text-gray-500'>
             No registered groups match your filters.
           </div>
