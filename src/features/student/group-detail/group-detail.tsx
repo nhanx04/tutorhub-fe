@@ -3,10 +3,12 @@ import { FaExternalLinkAlt, FaStar } from 'react-icons/fa'
 
 import { MainLayout } from 'src/layouts'
 import ReusableTable from 'src/components/Table'
-import { groupDetail } from './mockdata/mock-group-infor'
-import { sampleData } from './mockdata/mock-table-data'
+import { useLocation } from 'react-router-dom'
+import { groupService } from 'src/services/groupService'
+import { consultationService } from 'src/services/consultationService'
+import { feedbackService } from 'src/services/feedbackService'
 import { GroupInformation } from './components'
-import type { ConsultationSession } from 'src/types'
+import type { ConsultationSession, Group, Consultation } from 'src/types'
 import { ConfirmDialog } from 'src/components'
 
 type ConfirmationState = {
@@ -21,13 +23,80 @@ type FeedbackState = {
 }
 
 export const ConsultationSessionsPage: React.FC = () => {
-  const [sessions, setSessions] = useState<ConsultationSession[]>(sampleData)
+  const location = useLocation()
+  const groupId = location.state?.groupId
+
+  const [group, setGroup] = useState<Group | null>(null)
+  const [sessions, setSessions] = useState<ConsultationSession[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [confirmation, setConfirmation] = useState<ConfirmationState>({ mode: 'register', session: null })
   const [banner, setBanner] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
   const [isGroupDialogOpen, setIsGroupDialogOpen] = useState(false)
-  const [hasJoinedGroup, setHasJoinedGroup] = useState(() => sampleData.some((session) => session.isRegistered))
+  const [hasJoinedGroup, setHasJoinedGroup] = useState(false)
   const [feedbackState, setFeedbackState] = useState<FeedbackState | null>(null)
   const [feedbackError, setFeedbackError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!groupId) {
+      setError('Group ID not found. Please navigate from the dashboard or group explorer.')
+      setLoading(false)
+      return
+    }
+
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        const groupData = await groupService.getGroupById(groupId)
+        setGroup(groupData)
+
+        const consultationData: Consultation[] = await consultationService.getConsultationsByGroup(groupId)
+
+        // TODO: The API should ideally indicate if the user has joined the group.
+        // For now, we assume if they can see the details, they have joined.
+        setHasJoinedGroup(true)
+
+        const formattedSessions: ConsultationSession[] = consultationData.map((c) => ({
+          id: c.id,
+          conId: `C${c.id}`,
+          generalDetails: {
+            title: c.topic,
+            description: c.description,
+            links: [c.locationLink]
+          },
+          timeAndLocation: {
+            time: c.consultationTime,
+            date: c.consultationDate,
+            location: c.type === 'OFFLINE' ? c.locationLink : undefined,
+            meetingLink: c.type === 'ONLINE' ? c.locationLink : undefined
+          },
+          capacity: {
+            registered: 0, // Placeholder - API does not provide this
+            total: 1 // Placeholder - API does not provide this
+          },
+          status: (() => {
+            if (c.status === 'CANCELED') return 'Canceled'
+            const today = new Date()
+            today.setHours(0, 0, 0, 0)
+            const sessionDate = new Date(c.consultationDate)
+            if (sessionDate < today) return 'Completed'
+            // Assuming isRegistered will be handled by another mechanism
+            return 'Allow Register'
+          })(),
+          isRegistered: false // Placeholder - API should provide this per user
+        }))
+
+        setSessions(formattedSessions)
+        setError(null)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch group details.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [groupId])
 
   useEffect(() => {
     if (!banner) {
@@ -78,79 +147,33 @@ export const ConsultationSessionsPage: React.FC = () => {
     setFeedbackState((prev) => (prev ? { ...prev, ...updates } : prev))
   }, [])
 
-  const handleConfirmAction = useCallback(() => {
-    if (!confirmation.session) {
-      return
-    }
+  const handleConfirmAction = useCallback(async () => {
+    if (!confirmation.session) return
 
-    const currentSession = sessions.find((item) => item.id === confirmation.session?.id)
-    if (!currentSession) {
-      closeConfirmation()
-      return
-    }
+    const sessionId = confirmation.session.id
+    const sessionConId = confirmation.session.conId
 
-    if (confirmation.mode === 'register') {
-      if (currentSession.capacity.registered >= currentSession.capacity.total) {
-        setBanner({
-          type: 'error',
-          message: 'This consultation is already full. Please choose another slot.'
-        })
-        closeConfirmation()
-        return
-      }
-
-      setSessions((prev) =>
-        prev.map((item) =>
-          item.id === currentSession.id
-            ? {
-                ...item,
-                capacity: { ...item.capacity, registered: item.capacity.registered + 1 },
-                status: 'Registered',
-                isRegistered: true
-              }
-            : item
+    try {
+      if (confirmation.mode === 'register') {
+        await consultationService.registerForConsultation(sessionId)
+        setSessions((prev) =>
+          prev.map((s) => (s.id === sessionId ? { ...s, isRegistered: true, status: 'Registered' } : s))
         )
-      )
-      setBanner({
-        type: 'success',
-        message: `You registered for ${currentSession.conId}. A confirmation email will be sent to you and the tutor.`
-      })
-    } else {
-      const deadline = currentSession.cancellationDeadline ? new Date(currentSession.cancellationDeadline) : null
-      if (deadline && deadline <= new Date()) {
-        setBanner({
-          type: 'error',
-          message: 'The cancellation window has closed for this consultation.'
-        })
-        closeConfirmation()
-        return
+        setBanner({ type: 'success', message: `Successfully registered for ${sessionConId}.` })
+      } else {
+        await consultationService.unregisterFromConsultation(sessionId)
+        setSessions((prev) =>
+          prev.map((s) => (s.id === sessionId ? { ...s, isRegistered: false, status: 'Allow Register' } : s))
+        )
+        setBanner({ type: 'success', message: `Successfully unregistered from ${sessionConId}.` })
       }
-
-      setSessions((prev) =>
-        prev.map((item) => {
-          if (item.id !== currentSession.id) {
-            return item
-          }
-          const nextRegistered = Math.max(item.capacity.registered - 1, 0)
-          const nextStatus =
-            item.status === 'Completed' ? 'Completed' : nextRegistered >= item.capacity.total ? 'Full' : 'Allow Register'
-
-          return {
-            ...item,
-            capacity: { ...item.capacity, registered: nextRegistered },
-            status: nextStatus,
-            isRegistered: false
-          }
-        })
-      )
-      setBanner({
-        type: 'success',
-        message: `You cancelled your reservation for ${currentSession.conId}.`
-      })
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred.'
+      setBanner({ type: 'error', message: `Operation failed: ${errorMessage}` })
+    } finally {
+      closeConfirmation()
     }
-
-    closeConfirmation()
-  }, [closeConfirmation, confirmation, sessions])
+  }, [closeConfirmation, confirmation])
 
   const handleConfirmGroupSelection = useCallback(() => {
     setHasJoinedGroup(true)
@@ -161,37 +184,65 @@ export const ConsultationSessionsPage: React.FC = () => {
     setIsGroupDialogOpen(false)
   }, [])
 
-  const handleSubmitFeedback = useCallback(() => {
-    if (!feedbackState) {
-      return
-    }
+  const handleSubmitFeedback = useCallback(async () => {
+    if (!feedbackState) return
 
     if (feedbackState.rating === 0) {
       setFeedbackError('Please select a rating before submitting.')
       return
     }
 
-    setSessions((prev) =>
-      prev.map((item) =>
-        item.id === feedbackState.session.id
-          ? {
-              ...item,
-              feedback: {
-                rating: feedbackState.rating,
-                comment: feedbackState.comment.trim()
-              }
-            }
-          : item
-      )
-    )
+    const { session, rating, comment } = feedbackState
+    const feedbackData = { rating, comment: comment.trim(), consultationId: session.id }
 
-    setBanner({
-      type: 'success',
-      message: 'Thank you for sharing your feedback with the tutor.'
-    })
-    setFeedbackState(null)
-    setFeedbackError(null)
-  }, [feedbackState])
+    try {
+      let updatedFeedback
+      if (session.feedback?.id) {
+        // Update existing feedback
+        updatedFeedback = await feedbackService.updateFeedback(session.feedback.id, feedbackData)
+        setBanner({ type: 'success', message: 'Your feedback has been updated.' })
+      } else {
+        // Create new feedback
+        updatedFeedback = await feedbackService.postFeedback(feedbackData)
+        setBanner({ type: 'success', message: 'Thank you for sharing your feedback.' })
+      }
+
+      setSessions((prev) =>
+        prev.map((item) =>
+          item.id === session.id
+            ? {
+                ...item,
+                feedback: { id: updatedFeedback.id, rating: updatedFeedback.rating, comment: updatedFeedback.comment }
+              }
+            : item
+        )
+      )
+
+      closeFeedback()
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred.'
+      setFeedbackError(errorMessage)
+    }
+  }, [feedbackState, closeFeedback])
+
+  const handleDeleteFeedback = useCallback(
+    async (sessionId: number, feedbackId: number) => {
+      if (!window.confirm('Are you sure you want to delete your feedback? This action cannot be undone.')) {
+        return
+      }
+
+      try {
+        await feedbackService.deleteFeedback(feedbackId)
+        setSessions((prev) => prev.map((item) => (item.id === sessionId ? { ...item, feedback: undefined } : item)))
+        setBanner({ type: 'success', message: 'Your feedback has been deleted.' })
+        closeFeedback()
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to delete feedback.'
+        setBanner({ type: 'error', message: errorMessage })
+      }
+    },
+    [closeFeedback]
+  )
 
   const columns = useMemo(
     () => [
@@ -272,7 +323,9 @@ export const ConsultationSessionsPage: React.FC = () => {
               <p>
                 {row.capacity.registered}/{row.capacity.total}
               </p>
-              <p className='text-xs text-gray-500'>{available > 0 ? `${available} seats left` : 'No seats available'}</p>
+              <p className='text-xs text-gray-500'>
+                {available > 0 ? `${available} seats left` : 'No seats available'}
+              </p>
             </div>
           )
         }
@@ -281,7 +334,9 @@ export const ConsultationSessionsPage: React.FC = () => {
         header: 'Status',
         accessor: 'status' as keyof ConsultationSession,
         width: '12%',
-        render: (row: ConsultationSession) => <StatusPill status={row.status} feedbackProvided={Boolean(row.feedback)} />
+        render: (row: ConsultationSession) => (
+          <StatusPill status={row.status} feedbackProvided={Boolean(row.feedback)} />
+        )
       },
       {
         header: 'Actions',
@@ -310,20 +365,43 @@ export const ConsultationSessionsPage: React.FC = () => {
           </div>
         )}
 
-        <section>
-          <h1 className='rounded-t-lg bg-indigo-200 p-3 text-xl font-bold text-indigo-900'>Group Information</h1>
-          <GroupInformation
-            {...groupDetail}
-            onSelectGroup={openGroupSelection}
-            isGroupSelected={hasJoinedGroup}
-          />
-        </section>
+        {loading ? (
+          <div className='text-center p-6'>Loading group details...</div>
+        ) : error ? (
+          <div className='text-center text-red-500 p-6'>{error}</div>
+        ) : group ? (
+          <>
+            <section>
+              <h1 className='rounded-t-lg bg-indigo-200 p-3 text-xl font-bold text-indigo-900'>Group Information</h1>
+              <GroupInformation
+                title={group.groupName}
+                description={group.description}
+                tutor={group.tutor.userName}
+                faculty={group.faculty.name}
+                studentCount={group.studentLimit} // API does not provide current student count
+                focusAreas={group.topics.map((t) => t.name)}
+                onSelectGroup={openGroupSelection}
+                isGroupSelected={hasJoinedGroup}
+              />
+            </section>
 
-        <section>
-          <h2 className='rounded-t-lg bg-indigo-200 p-3 text-xl font-bold text-indigo-900'>Consultation Sessions</h2>
-          <ReusableTable columns={columns} data={sessions} />
-      </section>
-    </div>
+            <section>
+              <h2 className='rounded-t-lg bg-indigo-200 p-3 text-xl font-bold text-indigo-900'>
+                Consultation Sessions
+              </h2>
+              {sessions.length > 0 ? (
+                <ReusableTable columns={columns} data={sessions} />
+              ) : (
+                <div className='p-4 text-center text-gray-500 bg-white rounded-b-lg'>
+                  No consultation sessions scheduled for this group yet.
+                </div>
+              )}
+            </section>
+          </>
+        ) : (
+          <div className='text-center p-6'>Group not found.</div>
+        )}
+      </div>
 
       <ConfirmDialog
         isOpen={isGroupDialogOpen}
@@ -333,8 +411,8 @@ export const ConsultationSessionsPage: React.FC = () => {
       >
         <div className='space-y-2 text-sm text-gray-700'>
           <p>
-            You are about to join <span className='font-semibold'>{groupDetail.title}</span> led by{' '}
-            {groupDetail.tutor}.
+            You are about to join <span className='font-semibold'>{group?.groupName}</span> led by{' '}
+            {group?.tutor.userName}.
           </p>
           <p>
             The system will store your registration, notify the tutoring office and sync with connected services.
@@ -373,6 +451,7 @@ export const ConsultationSessionsPage: React.FC = () => {
         onClose={closeFeedback}
         onUpdate={updateFeedbackState}
         onSubmit={handleSubmitFeedback}
+        onDelete={handleDeleteFeedback}
       />
     </MainLayout>
   )
@@ -390,7 +469,8 @@ const statusStyles: Record<ConsultationSession['status'], string> = {
   'Allow Register': 'bg-yellow-100 text-yellow-800',
   Registered: 'bg-indigo-100 text-indigo-800',
   Completed: 'bg-green-100 text-green-800',
-  Full: 'bg-red-100 text-red-700'
+  Full: 'bg-red-100 text-red-700',
+  Canceled: 'bg-gray-200 text-gray-800'
 }
 
 const StatusPill: React.FC<{ status: ConsultationSession['status']; feedbackProvided: boolean }> = ({
@@ -421,16 +501,12 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ session, onRegister, onCa
   const canCancel = session.isRegistered && session.status !== 'Completed' && (!deadline || deadline > now)
 
   if (session.status === 'Completed') {
-    if (session.feedback) {
-      return <span className='text-xs text-green-700'>Feedback sent</span>
-    }
-
     return (
       <button
         onClick={() => onFeedback(session)}
-        className='w-full rounded-md bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-blue-700 cursor-pointer'
+        className={`w-full rounded-md px-3 py-2 text-xs font-semibold text-white transition cursor-pointer ${session.feedback ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-blue-600 hover:bg-blue-700'}`}
       >
-        Add feedback
+        {session.feedback ? 'Edit Feedback' : 'Add Feedback'}
       </button>
     )
   }
@@ -476,9 +552,10 @@ interface FeedbackModalProps {
   onClose: () => void
   onUpdate: (updates: Partial<{ rating: number; comment: string }>) => void
   onSubmit: () => void
+  onDelete: (sessionId: number, feedbackId: number) => void
 }
 
-const FeedbackModal: React.FC<FeedbackModalProps> = ({ state, error, onClose, onUpdate, onSubmit }) => {
+const FeedbackModal: React.FC<FeedbackModalProps> = ({ state, error, onClose, onUpdate, onSubmit, onDelete }) => {
   if (!state) {
     return null
   }
@@ -509,19 +586,31 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ state, error, onClose, on
           onChange={(event) => onUpdate({ comment: event.target.value })}
         />
         {error && <p className='mt-2 text-sm text-red-600'>{error}</p>}
-        <div className='mt-6 flex justify-end gap-3'>
-          <button
-            onClick={onClose}
-            className='rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-600 transition hover:bg-gray-100 cursor-pointer'
-          >
-            Cancel
-          </button>
-          <button
-            onClick={onSubmit}
-            className='rounded-md bg-indigo-600 px-4 py-2 text-sm text-white transition hover:bg-indigo-700 cursor-pointer'
-          >
-            Submit feedback
-          </button>
+        <div className='mt-6 flex justify-between items-center'>
+          <div>
+            {state.session.feedback?.id && (
+              <button
+                onClick={() => onDelete(state.session.id, state.session.feedback!.id)}
+                className='rounded-md bg-red-600 px-4 py-2 text-sm text-white transition hover:bg-red-700 cursor-pointer'
+              >
+                Delete
+              </button>
+            )}
+          </div>
+          <div className='flex gap-3'>
+            <button
+              onClick={onClose}
+              className='rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-600 transition hover:bg-gray-100 cursor-pointer'
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onSubmit}
+              className='rounded-md bg-indigo-600 px-4 py-2 text-sm text-white transition hover:bg-indigo-700 cursor-pointer'
+            >
+              {state.session.feedback?.id ? 'Update Feedback' : 'Submit Feedback'}
+            </button>
+          </div>
         </div>
       </div>
     </div>

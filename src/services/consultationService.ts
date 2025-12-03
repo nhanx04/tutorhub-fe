@@ -110,10 +110,55 @@ export const consultationService = {
         headers: getAuthHeaders()
       })
       if (!response.ok) {
-        throw new Error(`Failed to delete consultation: ${response.statusText}`)
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || `Failed to delete consultation: ${response.statusText}`)
       }
     } catch (error) {
       console.error('Error deleting consultation:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Register for a consultation
+   * POST /api/consultations/{consultationId}/register
+   */
+  async registerForConsultation(consultationId: number): Promise<any> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/${consultationId}/register`, {
+        method: 'POST',
+        headers: getAuthHeaders()
+      })
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || `Failed to register for consultation: ${response.statusText}`)
+      }
+      const text = await response.text()
+      return text ? JSON.parse(text) : { success: true }
+    } catch (error) {
+      console.error('Error registering for consultation:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Unregister from a consultation
+   * POST /api/consultations/{consultationId}/unregister
+   */
+  async unregisterFromConsultation(consultationId: number): Promise<any> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/${consultationId}/unregister`, {
+        method: 'POST',
+        headers: getAuthHeaders()
+      })
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || `Failed to unregister from consultation: ${response.statusText}`)
+      }
+      const text = await response.text()
+      return text ? JSON.parse(text) : { success: true }
+    } catch (error) {
+      console.error('Error unregistering from consultation:', error)
       throw error
     }
   }
