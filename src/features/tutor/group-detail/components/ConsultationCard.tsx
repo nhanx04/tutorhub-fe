@@ -5,6 +5,8 @@ import { RxCrossCircled } from 'react-icons/rx'
 import { useState } from 'react'
 import Modal from '../../dashboard/components/PopupNoti'
 import { StudentFeedbackModal } from './StudentFeedbackModal'
+import { StudentListModal } from './StudentListModal'
+
 import { useNavigate } from 'react-router'
 import { consultationService } from 'src/services/consultationService'
 
@@ -33,6 +35,8 @@ export const ConsultationCard: React.FC<ConsulCardProps> = ({ session, groupId }
   const { sid, generalDetails, timeAndLocation, students, status } = session
   const [showCancel, setShowCancel] = useState(false)
   const [showFeedback, setShowFeedback] = useState(false)
+  const [isStudentListOpen, setStudentListOpen] = useState(false)
+
   const [isDeleting, setIsDeleting] = useState(false)
 
   const statusColors: Record<string, string> = {
@@ -91,6 +95,8 @@ export const ConsultationCard: React.FC<ConsulCardProps> = ({ session, groupId }
         students={mockStudents}
         onSave={handleSaveFeedback}
       />
+      <StudentListModal isOpen={isStudentListOpen} onClose={() => setStudentListOpen(false)} consultationId={sid} />
+
       <div className='bg-white px-5 py-5 border-b border-gray-300'>
         <div className='flex items-start text-sm lg:text-base gap-4'>
           {/* sid và thông tin sơ bộ */}
@@ -101,7 +107,7 @@ export const ConsultationCard: React.FC<ConsulCardProps> = ({ session, groupId }
               <h3 className='font-semibold break-words'>{generalDetails.topic}</h3>
               <p className='text-sm text-gray-600 mt-1 break-words'>{generalDetails.description}</p>
               <ul className='list-none mt-2 text-sm'>
-                {generalDetails.links.map((link, idx) => (
+                {generalDetails.links.map((link: string, idx: number) => (
                   <li key={idx} className='mb-1'>
                     <span className='whitespace-nowrap'>- Tài liệu {idx + 1}: </span>
                     <a
@@ -159,14 +165,22 @@ export const ConsultationCard: React.FC<ConsulCardProps> = ({ session, groupId }
               </button>
             )}
             {status === 'Allow Register' && (
-              <button
-                onClick={() => setShowCancel?.(true)}
-                disabled={isDeleting}
-                className='flex items-center gap-1 bg-red-800 w-25 px-2 py-1 rounded-md border-2 border-red-800 hover:bg-white hover:text-red-800 disabled:opacity-50'
-              >
-                <RxCrossCircled size={15}></RxCrossCircled>
-                <p>{isDeleting ? 'Deleting...' : 'Cancel'}</p>
-              </button>
+              <div>
+                <button
+                  onClick={() => setShowCancel?.(true)}
+                  disabled={isDeleting}
+                  className='flex items-center gap-1 bg-red-800 w-25 px-2 py-1 rounded-md border-2 border-red-800 hover:bg-white hover:text-red-800 disabled:opacity-50'
+                >
+                  <RxCrossCircled size={15}></RxCrossCircled>
+                  <p>{isDeleting ? 'Deleting...' : 'Cancel'}</p>
+                </button>
+                <button
+                  onClick={() => setStudentListOpen(true)}
+                  className='flex items-center gap-1 bg-blue-500 w-25 px-2 py-1 rounded-md border-2 border-blue-500 hover:bg-white hover:text-blue-500 mt-2'
+                >
+                  <p>Students</p>
+                </button>
+              </div>
             )}
             {status === 'Canceled' && <p></p>}
           </div>

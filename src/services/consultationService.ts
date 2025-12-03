@@ -161,5 +161,48 @@ export const consultationService = {
       console.error('Error unregistering from consultation:', error)
       throw error
     }
+  },
+
+  /**
+   * Get reviewable students for a consultation
+   * GET /api/consultations/{consultationId}/reviewable-students
+   */
+  async getReviewableStudents(consultationId: number): Promise<any[]> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/${consultationId}/reviewable-students`, {
+        method: 'GET',
+        headers: getAuthHeaders()
+      })
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || 'Failed to fetch reviewable students')
+      }
+      return await response.json()
+    } catch (error) {
+      console.error('Error fetching reviewable students:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Submit reviews for students in a consultation
+   * POST /api/consultations/{consultationId}/reviews
+   */
+  async submitStudentReviews(consultationId: number, reviews: any[]): Promise<any> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/${consultationId}/reviews`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ reviews })
+      })
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || 'Failed to submit reviews')
+      }
+      return await response.json()
+    } catch (error) {
+      console.error('Error submitting reviews:', error)
+      throw error
+    }
   }
 }

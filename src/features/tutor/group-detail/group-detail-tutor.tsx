@@ -26,12 +26,14 @@ const convertConsultationToSession = (consultation: Consultation): Session => {
       meetingLink: consultation.type === 'ONLINE' ? consultation.locationLink : undefined
     },
     students: '0/0', // This should come from API if available
-    status:
-      consultation.status === 'SCHEDULED'
-        ? 'Allow Register'
-        : consultation.status === 'COMPLETED'
-          ? 'Completed'
-          : 'Canceled'
+    status: (() => {
+      if (consultation.status === 'CANCELED') return 'Canceled'
+      // Timezone-safe date comparison
+      const today = new Date().toISOString().split('T')[0] // Gets 'YYYY-MM-DD' in UTC
+      if (consultation.consultationDate < today) return 'Completed'
+      if (consultation.status === 'COMPLETED') return 'Completed'
+      return 'Allow Register' // Default for SCHEDULED
+    })()
   }
 }
 
