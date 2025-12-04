@@ -1,7 +1,7 @@
 import type { Consultation, ConsultationFormData } from 'src/types'
 import { authService } from './authService'
 
-const API_BASE_URL = 'http://localhost:8080/api/consultations'
+const API_BASE_URL = 'https://tutorhub-be-1.onrender.com/api/consultations'
 
 const getAuthHeaders = () => {
   const token = authService.getToken()
