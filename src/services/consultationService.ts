@@ -1,5 +1,6 @@
 import type { Consultation, ConsultationFormData } from 'src/types'
 import { authService } from './authService'
+import { formatConsultationDataForAPI } from 'src/utils/dateTimeFormatter'
 
 const API_BASE_URL = 'https://tutorhub-be-1.onrender.com/api/consultations'
 
@@ -61,10 +62,13 @@ export const consultationService = {
    */
   async createConsultation(formData: ConsultationFormData): Promise<Consultation> {
     try {
+      // Format date/time fields to ensure correct API format
+      const formattedData = formatConsultationDataForAPI(formData)
+
       const response = await fetch(API_BASE_URL, {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formattedData)
       })
       if (!response.ok) {
         throw new Error(`Failed to create consultation: ${response.statusText}`)
@@ -83,10 +87,13 @@ export const consultationService = {
    */
   async updateConsultation(id: number, formData: Partial<ConsultationFormData>): Promise<Consultation> {
     try {
+      // Format date/time fields to ensure correct API format
+      const formattedData = formatConsultationDataForAPI(formData)
+
       const response = await fetch(`${API_BASE_URL}/${id}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formattedData)
       })
       if (!response.ok) {
         throw new Error(`Failed to update consultation: ${response.statusText}`)
