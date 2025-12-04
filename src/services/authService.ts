@@ -96,10 +96,12 @@ class AuthService {
 
       const userData = await response.json()
       return {
-        user_id: userData.uid.toString(),
+        user_id: userData.uid?.toString?.() ?? String(userData.uid),
         name: userData.userName,
         email: userData.email,
-        role: userData.role
+        role: userData.role,
+        // Support facultyId mapping if backend provides it under different shapes
+        facultyId: userData.faculty?.id ?? userData.facultyId ?? undefined
       }
     } catch (error) {
       if (error instanceof ApiError) {
