@@ -27,29 +27,6 @@ export default function LoginPage() {
     }
   }
 
-  const MOCK_ACCOUNTS = [
-    {
-      role: 'student',
-      email: 'student@demo.com',
-      password: '123456',
-      note: '/dashboard, /student/profile, /student/group-explorer, /library'
-    },
-    {
-      role: 'tutor',
-      email: 'tutor@demo.com',
-      password: '123456',
-      note: '/tutor/dashboard-tutor, /tutor/profile-tutor, /library'
-    },
-    { role: 'faculty', email: 'faculty@demo.com', password: '123456', note: '/faculty/student-assessment' },
-    {
-      role: 'pctsv',
-      email: 'pctsv@demo.com',
-      password: '123456',
-      note: '/phong-ctsv/student-list, /phong-ctsv/tutor-list'
-    },
-    { role: 'pdt', email: 'pdt@demo.com', password: '123456', note: '/phong-dao-tao/dashboard' }
-  ] as const
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -65,25 +42,6 @@ export default function LoginPage() {
     }
   }
 
-  const handlePickMock = (acc: (typeof MOCK_ACCOUNTS)[number]) => {
-    setEmail(acc.email)
-    setPassword(acc.password)
-  }
-
-  const handleQuickLogin = async (acc: (typeof MOCK_ACCOUNTS)[number]) => {
-    if (loading) return
-    setError('')
-    setLoading(true)
-    try {
-      const u = await login({ email: acc.email, password: acc.password })
-      navigate(getRedirectByRole(u.role))
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Đăng nhập thất bại')
-    } finally {
-      setLoading(false)
-    }
-  }
-
   return (
     <div className='flex items-center justify-center min-h-screen bg-sky-200 p-3'>
       <div className='w-full max-w-3xl p-8 space-y-6 bg-white rounded-lg shadow-md'>
@@ -91,44 +49,6 @@ export default function LoginPage() {
         <div className='text-center'>
           <img className='mx-auto h-24 w-auto' src={logo} alt='TutorHub Logo' />
           <h1 className='text-3xl font-bold mt-6 text-blue-900'>Đăng nhập</h1>
-        </div>
-
-        {/* Mock accounts */}
-        <div className='space-y-3 rounded-md border border-blue-100 bg-blue-50 p-4'>
-          <div className='text-sm text-blue-900 font-medium'>
-            Tài khoản mẫu (chọn để điền nhanh hoặc đăng nhập 1 chạm)
-          </div>
-          <div className='grid gap-3 md:grid-cols-2'>
-            {MOCK_ACCOUNTS.map((acc) => (
-              <div
-                key={acc.role}
-                className='flex items-start justify-between gap-3 rounded-md bg-white border border-blue-100 p-3'
-              >
-                <div>
-                  <div className='font-semibold text-gray-800 capitalize'>{acc.role}</div>
-                  <div className='text-sm text-gray-700'>{acc.email}</div>
-                  <div className='text-xs text-gray-500'>Quyền: {acc.note}</div>
-                </div>
-                <div className='flex gap-2'>
-                  <button
-                    type='button'
-                    onClick={() => handlePickMock(acc)}
-                    className='px-3 py-1 text-xs rounded-md border border-blue-200 text-blue-700 hover:bg-blue-50 cursor-pointer'
-                  >
-                    Điền nhanh
-                  </button>
-                  <button
-                    type='button'
-                    onClick={() => handleQuickLogin(acc)}
-                    className='px-3 py-1 text-xs rounded-md bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer disabled:bg-indigo-400'
-                    disabled={loading}
-                  >
-                    Đăng nhập
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
 
         {/* Main form */}

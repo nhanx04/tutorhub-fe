@@ -1,13 +1,13 @@
 import React from 'react'
 import type { ExplorerGroupCardProps } from 'src/types'
-import { FaRegEye, FaRegCheckCircle } from 'react-icons/fa'
+import { FaRegCheckCircle } from 'react-icons/fa'
 import { useNavigate } from 'react-router'
 
 const GroupExplorerCard: React.FC<ExplorerGroupCardProps> = ({
   group,
   isSelected,
   onSelect,
-  onViewDetails,
+
   disableSelection
 }) => {
   const navigate = useNavigate()
@@ -15,14 +15,6 @@ const GroupExplorerCard: React.FC<ExplorerGroupCardProps> = ({
   const isSelectable = !disableSelection && !isFull
   const statusLabel = isFull ? 'Full' : 'Open'
   const statusClass = isFull ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
-
-  const handleViewDetails = () => {
-    if (onViewDetails) {
-      onViewDetails(group)
-      return
-    }
-    navigate('/student/group-detail', { state: { groupId: group.id } })
-  }
 
   const handleSelect = () => {
     if (!isSelectable) {
@@ -74,12 +66,6 @@ const GroupExplorerCard: React.FC<ExplorerGroupCardProps> = ({
       </div>
 
       <div className='mt-6 flex flex-wrap gap-3'>
-        <button
-          onClick={handleViewDetails}
-          className='flex flex-1 items-center justify-center gap-2 rounded-md border border-blue-600 px-4 py-2 text-blue-600 transition-colors hover:bg-blue-600 hover:text-white cursor-pointer'
-        >
-          <FaRegEye /> View details
-        </button>
         <button
           onClick={handleSelect}
           disabled={!isSelectable && !isSelected}

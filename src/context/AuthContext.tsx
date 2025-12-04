@@ -34,28 +34,29 @@ export function AuthProvider({ children }: AuthProdivderProps) {
     setLoading(false)
   }, [])
 
-  // Hardcoded login: derive role from email and set a fake token
+  // Login with API call
   const login = async (credential: Credentials): Promise<User> => {
-    const email = credential.email.toLowerCase()
+    try {
+      // Call API to get token
+      const loginResponse = await authService.login(credential)
 
-    let role: User['role'] = 'student'
-    if (email.includes('tutor')) role = 'tutor'
-    else if (email.includes('faculty')) role = 'faculty'
-    else if (email.includes('pctsv')) role = 'pctsv'
-    else if (email.includes('pdt')) role = 'pdt'
+      // Store token
+      authService.setToken(loginResponse.token)
 
-    const fakeUser: User = {
-      user_id: `hardcoded-${role}`,
-      name: email.split('@')[0] || 'User',
-      email,
-      role
+      // Get user info from API
+      const user = await authService.getCurrentUser()
+
+      // Store user data
+      localStorage.setItem('user', JSON.stringify(user))
+      setUser(user)
+
+      return user
+    } catch (error) {
+      // Clear any stored data on login failure
+      authService.removeToken()
+      localStorage.removeItem('user')
+      throw error
     }
-
-    // set a fake token to keep existing flows that rely on token
-    authService.setToken('hardcoded-token')
-    localStorage.setItem('user', JSON.stringify(fakeUser))
-    setUser(fakeUser)
-    return fakeUser
   }
 
   const logout = () => {

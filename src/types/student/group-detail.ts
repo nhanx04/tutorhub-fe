@@ -26,13 +26,14 @@ export interface ConsultationSession {
     total: number
   }
 
-  status: 'Allow Register' | 'Registered' | 'Completed' | 'Full'
+  status: 'Allow Register' | 'Registered' | 'Completed' | 'Full' | 'Canceled'
 
   isRegistered: boolean
 
   cancellationDeadline?: string
 
   feedback?: {
+    id: number
     rating: number
     comment: string
   }

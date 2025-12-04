@@ -2,12 +2,15 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { FaSearch, FaUndoAlt } from 'react-icons/fa'
 
 import GroupExplorerCard from 'src/features/student/dashboard/components/GroupExplorerCard'
-import { studentGroups } from './mock-data/card-data'
 import { MainLayout } from 'src/layouts'
-import type { StudentGroup } from 'src/types'
+import type { StudentGroup, Group } from 'src/types'
 import { ConfirmDialog } from 'src/components'
+import { groupService } from 'src/services/groupService'
 
 export const GroupExplorerPage: React.FC = () => {
+  const [allGroups, setAllGroups] = useState<StudentGroup[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [keyword, setKeyword] = useState('')
   const [selectedTutor, setSelectedTutor] = useState('')
   const [selectedFocusAreas, setSelectedFocusAreas] = useState<string[]>([])
@@ -15,6 +18,36 @@ export const GroupExplorerPage: React.FC = () => {
   const [pendingGroup, setPendingGroup] = useState<StudentGroup | null>(null)
   const [selectedGroup, setSelectedGroup] = useState<StudentGroup | null>(null)
   const [alertMessage, setAlertMessage] = useState<{ type: 'success' | 'info'; message: string } | null>(null)
+
+  useEffect(() => {
+    const fetchAllGroups = async () => {
+      try {
+        setLoading(true)
+        const data: Group[] = await groupService.getAllGroups()
+
+        const formattedGroups: StudentGroup[] = data.map((group) => ({
+          id: group.id,
+          title: group.groupName,
+          description: group.description,
+          tutor: group.tutor.userName,
+          faculty: group.faculty.name,
+          currentStudents: 0, // Placeholder, API does not provide this
+          maxStudents: group.studentLimit,
+          focusAreas: group.topics.map((topic) => topic.name),
+          scheduleSummary: `${group.startDate} to ${group.endDate}`
+        }))
+
+        setAllGroups(formattedGroups)
+        setError(null)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch groups.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchAllGroups()
+  }, [])
 
   useEffect(() => {
     if (!alertMessage) {
@@ -25,19 +58,19 @@ export const GroupExplorerPage: React.FC = () => {
   }, [alertMessage])
 
   const focusAreaOptions = useMemo(() => {
-    const allFocusAreas = studentGroups.flatMap((group) => group.focusAreas)
+    const allFocusAreas = allGroups.flatMap((group) => group.focusAreas)
     return Array.from(new Set(allFocusAreas)).sort((a, b) => a.localeCompare(b))
-  }, [])
+  }, [allGroups])
 
   const tutorOptions = useMemo(() => {
-    const allTutors = studentGroups.map((group) => group.tutor)
+    const allTutors = allGroups.map((group) => group.tutor)
     return Array.from(new Set(allTutors)).sort((a, b) => a.localeCompare(b))
-  }, [])
+  }, [allGroups])
 
   const filteredGroups = useMemo(() => {
     const normalizedKeyword = keyword.trim().toLowerCase()
 
-    return studentGroups.filter((group) => {
+    return allGroups.filter((group) => {
       const matchesKeyword =
         !normalizedKeyword ||
         group.title.toLowerCase().includes(normalizedKeyword) ||
@@ -53,9 +86,9 @@ export const GroupExplorerPage: React.FC = () => {
 
       return matchesKeyword && matchesTutor && matchesFocusAreas
     })
-  }, [keyword, selectedTutor, selectedFocusAreas])
+  }, [allGroups, keyword, selectedTutor, selectedFocusAreas])
 
-  const groupsToRender = isFilterApplied ? filteredGroups : studentGroups
+  const groupsToRender = isFilterApplied ? filteredGroups : allGroups
 
   const handleToggleFocusArea = (area: string) => {
     setSelectedFocusAreas((prev) => (prev.includes(area) ? prev.filter((item) => item !== area) : prev.concat(area)))
@@ -78,17 +111,24 @@ export const GroupExplorerPage: React.FC = () => {
     setPendingGroup(group)
   }
 
-  const handleConfirmSelection = () => {
+  const handleConfirmSelection = async () => {
     if (!pendingGroup) {
       return
     }
 
-    setSelectedGroup(pendingGroup)
-    setAlertMessage({
-      type: 'success',
-      message: 'You selected "' + pendingGroup.title + '". The tutoring office will be notified.'
-    })
-    setPendingGroup(null)
+    try {
+      await groupService.joinGroups([pendingGroup.id])
+      setSelectedGroup(pendingGroup)
+      setAlertMessage({
+        type: 'success',
+        message: `Successfully joined group "${pendingGroup.title}".`
+      })
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred.'
+      setAlertMessage({ type: 'info', message: `Failed to join group: ${errorMessage}` })
+    } finally {
+      setPendingGroup(null)
+    }
   }
 
   const handleCancelSelection = () => {
@@ -111,7 +151,8 @@ export const GroupExplorerPage: React.FC = () => {
           <div className='rounded-md border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-900'>
             <p className='font-semibold'>Selected group</p>
             <p>
-              {selectedGroup.title} - Tutor {selectedGroup.tutor}. You can still explore and choose a different group if needed.
+              {selectedGroup.title} - Tutor {selectedGroup.tutor}. You can still explore and choose a different group if
+              needed.
             </p>
           </div>
         )}
@@ -183,9 +224,15 @@ export const GroupExplorerPage: React.FC = () => {
       </div>
 
       <div className='grid grid-cols-1 gap-6 px-6 pb-6 md:grid-cols-2 lg:grid-cols-3'>
-        {groupsToRender.length === 0 && isFilterApplied ? (
+        {loading ? (
+          <div className='col-span-full text-center'>Loading groups...</div>
+        ) : error ? (
+          <div className='col-span-full text-center text-red-500'>{error}</div>
+        ) : groupsToRender.length === 0 ? (
           <div className='col-span-full rounded-md border border-dashed border-gray-300 bg-white p-8 text-center text-gray-500'>
-            No groups match your filters. Try removing a focus area or searching with different keywords.
+            {isFilterApplied
+              ? 'No groups match your filters. Try removing a focus area or searching with different keywords.'
+              : 'No groups available for registration at the moment.'}
           </div>
         ) : (
           groupsToRender.map((group) => (
@@ -194,6 +241,7 @@ export const GroupExplorerPage: React.FC = () => {
               group={group}
               isSelected={selectedGroup?.id === group.id}
               onSelect={handleSelectGroup}
+              disableSelection={!!selectedGroup}
             />
           ))
         )}
@@ -208,10 +256,12 @@ export const GroupExplorerPage: React.FC = () => {
         {pendingGroup ? (
           <div className='space-y-2 text-sm text-gray-700'>
             <p>
-              You are about to join <span className='font-semibold'>{pendingGroup.title}</span> led by {pendingGroup.tutor}.
+              You are about to join <span className='font-semibold'>{pendingGroup.title}</span> led by{' '}
+              {pendingGroup.tutor}.
             </p>
             <p>
-              The system will store this choice, notify the tutoring office and sync it with related services. Do you want to continue?
+              The system will store this choice, notify the tutoring office and sync it with related services. Do you
+              want to continue?
             </p>
           </div>
         ) : null}

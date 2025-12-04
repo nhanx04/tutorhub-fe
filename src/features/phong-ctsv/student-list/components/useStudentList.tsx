@@ -1,123 +1,100 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
-import type { StudentRow } from "../mockdata/student-list-data";
-import { tutorDataa, FACULTY_TOPIC_MAP } from "../mockdata/student-list-data";
-import type { Column } from "src/features/faculty/student-assessment/components/Table";
-import { IoArrowForwardOutline } from "react-icons/io5";
+import { useEffect, useMemo, useState } from 'react'
+import type { Column } from 'src/features/faculty/student-assessment/components/Table'
+import type { StudentStat } from 'src/types/ctsv'
+import { statisticsService } from 'src/services/statisticsService'
+import { facultyService } from 'src/services/facultyService'
+import { topicService } from 'src/services/topicService'
+
+interface Faculty {
+  id: number
+  name: string
+}
+
+interface Topic {
+  id: number
+  name: string
+}
 
 export const useStudentList = () => {
-  const [selectedFaculty, setSelectedFaculty] = useState("");
-  const [selectedTopic, setSelectedTopic] = useState("");
-  const [selectedTutor, setSelectedTutor] = useState("");
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
-  const [filteredData, setFilteredData] = useState<StudentRow[]>(tutorDataa);
+  const [facultyId, setFacultyId] = useState('')
+  const [topicId, setTopicId] = useState('')
+  const [keyword, setKeyword] = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+  const [filteredData, setFilteredData] = useState<StudentStat[]>([])
+  const [faculties, setFaculties] = useState<Faculty[]>([])
+  const [topics, setTopics] = useState<Topic[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleSearch = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const params: any = {}
+      if (facultyId) params.facultyId = Number(facultyId)
+      if (topicId) params.topicId = Number(topicId)
+      if (dateFrom) params.startDate = dateFrom
+      if (dateTo) params.endDate = dateTo
+      let data = await statisticsService.getByStudent(params)
+
+      // Filter by keyword if provided
+      if (keyword.trim()) {
+        const kw = keyword.toLowerCase()
+        data = data.filter((s) => s.userName.toLowerCase().includes(kw) || s.userId.toLowerCase().includes(kw))
+      }
+
+      setFilteredData(data)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to load student statistics')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    applyFilter(selectedFaculty, selectedTopic, selectedTutor);
-  }, []);
-
-  const uniqueFaculties = useMemo(() => {
-    return [...new Set(tutorDataa.map((item) => item.faculty))].sort();
-  }, []);
-
-  const uniqueTutors = useMemo(() => {
-    return [...new Set(tutorDataa.map((item) => item.tutor))].sort();
-  }, []);
-
-  const availableTopics = useMemo(() => {
-    return selectedFaculty ? FACULTY_TOPIC_MAP[selectedFaculty] || [] : [];
-  }, [selectedFaculty]);
-
-  const applyFilter = useCallback((faculty: string, topic: string, tutor: string) => {
-    const result = tutorDataa.filter((item) => {
-      const facultyMatch = faculty === "" || item.faculty === faculty;
-      const topicMatch = topic === "" || item.topic === topic;
-      const tutorMatch = tutor === "" || item.tutor === tutor;
-      return facultyMatch && topicMatch && tutorMatch;
-    });
-
-    setFilteredData(result);
-  }, []);
-
-  const handleFacultyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newFaculty = e.target.value;
-    setSelectedFaculty(newFaculty);
-    if (newFaculty !== selectedFaculty) {
-      setSelectedTopic("");
+    const loadFacultiesAndTopics = async () => {
+      try {
+        const [facs, tops] = await Promise.all([facultyService.getAllFaculties(), topicService.getAllTopics()])
+        setFaculties(facs)
+        setTopics(tops)
+      } catch (e) {
+        console.error('Failed to load faculties/topics:', e)
+      }
     }
-  };
+    void loadFacultiesAndTopics()
+    void handleSearch()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-  const handleTopicChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedTopic(e.target.value);
-  };
-
-  const handleTutorChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedTutor(e.target.value);
-  };
-
-  const handleSearch = () => {
-    applyFilter(selectedFaculty, selectedTopic, selectedTutor);
-  };
-
-  const columns: Column<StudentRow>[] = useMemo(
+  const columns: Column<StudentStat>[] = useMemo(
     () => [
-      { header: "Stu. ID", accessor: "stuId", width: "10%" },
-      { header: "Name", accessor: "name", width: "20%" },
-      {
-        header: "Faculty",
-        accessor: "faculty",
-        width: "20%",
-        render: (row) => <span className="font-medium text-indigo-600">{row.faculty}</span>,
-      },
-      {
-        header: "Topic",
-        accessor: "topic",
-        width: "15%",
-        render: (row) => <span className="text-sm text-gray-700">{row.topic}</span>,
-      },
-      {
-        header: "Groups/Sessions",
-        accessor: "groups",
-        width: "15%",
-        textAlign: "center",
-        render: (row) => (
-          <span className="font-mono text-gray-800">
-            {row.groups} / {row.sessions}
-          </span>
-        ),
-      },
-      {
-        header: "View",
-        width: "10%",
-        textAlign: "center",
-        render: (row) => (
-          <button
-            className="flex items-center justify-center mx-auto gap-1 rounded-full bg-cyan-500 px-3 py-1.5 text-white text-sm font-medium shadow-md hover:bg-cyan-600 hover:scale-105"
-          >
-            <IoArrowForwardOutline size={16} />
-          </button>
-        ),
-      },
+      { header: 'User ID', accessor: 'userId', width: '12%' },
+      { header: 'Name', accessor: 'userName', width: '28%' },
+      { header: 'Faculty', accessor: 'facultyName', width: '28%' },
+      { header: 'Groups', accessor: 'groupCount', width: '16%', textAlign: 'center' },
+      { header: 'Consultations', accessor: 'consultationCount', width: '16%', textAlign: 'center' }
     ],
     []
-  );
+  )
 
   return {
-    selectedFaculty,
-    selectedTopic,
-    selectedTutor,
+    facultyId,
+    topicId,
+    keyword,
+    faculties,
+    topics,
+    setFacultyId,
+    setTopicId,
+    setKeyword,
     dateFrom,
     dateTo,
-    filteredData,
-    uniqueFaculties,
-    uniqueTutors,
-    availableTopics,
     setDateFrom,
     setDateTo,
-    handleFacultyChange,
-    handleTopicChange,
-    handleTutorChange,
+    filteredData,
+    loading,
+    error,
     handleSearch,
-    columns,
-  };
-};
+    columns
+  }
+}

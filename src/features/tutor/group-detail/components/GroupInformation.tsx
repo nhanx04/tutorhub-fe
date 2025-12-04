@@ -1,12 +1,23 @@
 import React from 'react'
 import { useState } from 'react'
-import type { TutorGroupInformationProps } from 'src/types'
 import { CiSquarePlus } from 'react-icons/ci'
 import { LuPenLine } from 'react-icons/lu'
 import CreateConsultationModal from './CreateConsultation'
 import { useNavigate } from 'react-router'
 
-export const GroupInformation: React.FC<TutorGroupInformationProps> = ({id, groupName, description }) => {
+interface TutorGroupInformationProps {
+  id: number
+  groupName: string
+  description: string
+  onConsultationCreated: () => void
+}
+
+export const GroupInformation: React.FC<TutorGroupInformationProps> = ({
+  id,
+  groupName,
+  description,
+  onConsultationCreated
+}) => {
   const [createConsul, setCreateConsul] = useState(false)
   const navigate = useNavigate()
 
@@ -18,9 +29,16 @@ export const GroupInformation: React.FC<TutorGroupInformationProps> = ({id, grou
     setCreateConsul(false)
   }
 
+  const handleConsultationCreated = () => {
+    setCreateConsul(false)
+    onConsultationCreated()
+  }
+
   return (
     <div>
-      {createConsul && <CreateConsultationModal onBack={handleBack}></CreateConsultationModal>}
+      {createConsul && (
+        <CreateConsultationModal onBack={handleBack} onConsultationCreated={handleConsultationCreated} />
+      )}
       <div className='bg-white p-6 shadow-sm border border-gray-300 flex justify-between items-start'>
         <div className='w-2/3 pr-6'>
           <h1 className='text-2xl font-bold text-gray-800 mb-3'>{groupName}</h1>
@@ -35,7 +53,10 @@ export const GroupInformation: React.FC<TutorGroupInformationProps> = ({id, grou
             <CiSquarePlus size={28}></CiSquarePlus>
             <p>New Consultation</p>
           </button>
-          <button onClick={() => navigate(`/tutor/edit-group/${id}`)} className='flex flex-row items-center justify-center gap-2 text-orange-500 border border-orange-500 rounded-md p-1.5 hover:bg-orange-500 hover:text-white transition-all duration-200 ease-in-out'>
+          <button
+            onClick={() => navigate(`/tutor/edit-group/${id}`)}
+            className='flex flex-row items-center justify-center gap-2 text-orange-500 border border-orange-500 rounded-md p-1.5 hover:bg-orange-500 hover:text-white transition-all duration-200 ease-in-out'
+          >
             <LuPenLine size={28}></LuPenLine>
             <p>Edit Group</p>
           </button>

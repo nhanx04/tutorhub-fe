@@ -2,29 +2,88 @@ import { MainLayout } from 'src/layouts'
 import { GroupInformation } from './components/GroupInformation'
 import { GrCircleInformation } from 'react-icons/gr'
 import { FaListUl } from 'react-icons/fa'
-import { consultationData } from './mock-data/session-data'
 import { ConsultationCard } from './components/ConsultationCard'
-import { tutorCardData } from '../dashboard/mock-data/card_data'
 import { useParams } from 'react-router'
-import type { Session } from 'src/types'
+import { useEffect, useState } from 'react'
+import { groupService } from 'src/services/groupService'
+import { consultationService } from 'src/services/consultationService'
+import type { Group, Consultation, Session } from 'src/types'
 import ErrorFallback from './components/ErrorFallBack'
+
+// Helper function to convert Consultation to Session format
+const convertConsultationToSession = (consultation: Consultation): Session => {
+  return {
+    sid: consultation.id,
+    generalDetails: {
+      topic: consultation.topic,
+      description: consultation.description,
+      links: []
+    },
+    timeAndLocation: {
+      time: consultation.consultationTime,
+      date: consultation.consultationDate,
+      location: consultation.type === 'OFFLINE' ? consultation.locationLink : undefined,
+      meetingLink: consultation.type === 'ONLINE' ? consultation.locationLink : undefined
+    },
+    students: '0/0', // This should come from API if available
+    status: (() => {
+      if (consultation.status === 'CANCELED') return 'Canceled'
+      // Timezone-safe date comparison
+      const today = new Date().toISOString().split('T')[0] // Gets 'YYYY-MM-DD' in UTC
+      if (consultation.consultationDate < today) return 'Completed'
+      if (consultation.status === 'COMPLETED') return 'Completed'
+      return 'Allow Register' // Default for SCHEDULED
+    })()
+  }
+}
 
 export const GroupDetailTutorPage = () => {
   const { id } = useParams<{ id: string }>()
-  const numericId = Number(id)
+  const [group, setGroup] = useState<Group | null>(null)
+  const [consultations, setConsultations] = useState<Consultation[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  // tìm tutor có id tương ứng (GỌI API sau này)
-  //có thể lấy thẳng consultationData bỏ qua bước xác minh Tutor
-  const tutor = tutorCardData.find((item) => item.id === numericId)
-  //sau này GỌI API để lấy danh sách buổi tư vấn trong 1 nhóm
-  const sessionData = consultationData[0]
+  const fetchGroupAndConsultations = async () => {
+    if (!id) {
+      setError('Group ID is missing.')
+      setLoading(false)
+      return
+    }
+    try {
+      setLoading(true)
+      const groupData = await groupService.getGroupById(id)
+      setGroup(groupData)
 
-  if (!tutor) {
-    return <ErrorFallback message='Không có tutor phù hợp với ID!' />
+      const consultationsData = await consultationService.getConsultationsByGroup(parseInt(id))
+      setConsultations(consultationsData)
+      setError(null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch group details.')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  if (!sessionData) {
-    return <ErrorFallback message='Tutor chưa có tạo buổi tư vấn nào, vui lòng thử lại sau!' />
+  useEffect(() => {
+    void fetchGroupAndConsultations()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id])
+
+  if (loading) {
+    return (
+      <MainLayout>
+        <p>Loading group details...</p>
+      </MainLayout>
+    )
+  }
+
+  if (error) {
+    return <ErrorFallback message={error} />
+  }
+
+  if (!group) {
+    return <ErrorFallback message='Group not found.' />
   }
 
   return (
@@ -34,13 +93,12 @@ export const GroupDetailTutorPage = () => {
           <GrCircleInformation size={26} className='mt-0.5' />
           <h1>Group Information</h1>
         </div>
-        {
-          <GroupInformation
-            id={sessionData.id}
-            groupName={sessionData.groupName}
-            description={sessionData.groupDescription}
-          />
-        }
+        <GroupInformation
+          id={group.id}
+          groupName={group.groupName}
+          description={group.description}
+          onConsultationCreated={fetchGroupAndConsultations}
+        />
       </div>
 
       <div className='flex flex-col px-6'>
@@ -75,9 +133,18 @@ export const GroupDetailTutorPage = () => {
           </div>
         </div>
 
-        {sessionData && sessionData.sessions.map((s) => (
-          <ConsultationCard key={s.sid} session={s} groupId={sessionData.id} />
-        ))}
+        {/* Consultations List */}
+        {consultations.length === 0 ? (
+          <div className='p-6 text-center text-gray-500'>Tutor chưa có tạo buổi tư vấn nào, vui lòng thử lại sau!</div>
+        ) : (
+          consultations.map((consultation) => (
+            <ConsultationCard
+              key={consultation.id}
+              session={convertConsultationToSession(consultation)}
+              groupId={group.id}
+            />
+          ))
+        )}
       </div>
     </MainLayout>
   )

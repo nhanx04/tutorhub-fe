@@ -1,8 +1,8 @@
 import type { MetaFunction } from 'react-router'
-import { createGroupForm } from 'src/features'
+import { CreateGroupPage } from 'src/features/tutor/dashboard'
 
 export const meta: MetaFunction = () => {
-  return [{ title: 'Create new group' }, { name: '', content: 'Create new group form' }]
+  return [{ title: 'Create New Group' }, { name: 'description', content: 'Create a new research group.' }]
 }
 
-export default createGroupForm
+export default CreateGroupPage

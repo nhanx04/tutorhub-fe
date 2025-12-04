@@ -12,4 +12,7 @@ export interface User {
   email: string
 
   role: string
+
+  // Optional: faculty ID for users belonging to a faculty (e.g., faculty role)
+  facultyId?: number
 }

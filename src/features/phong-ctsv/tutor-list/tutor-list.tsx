@@ -1,63 +1,99 @@
-import { MainLayout } from 'src/layouts';
-import Table, { type Column } from "src/features/faculty/student-assessment/components/Table";
+import { useState } from 'react'
+import { MainLayout } from 'src/layouts'
+import Table from 'src/features/faculty/student-assessment/components/Table'
 
-import { FiDownload, FiSearch } from "react-icons/fi";
-import { CiFilter, CiCalendar } from "react-icons/ci";
-import { useTutorList } from "./components/useTutorList";
-import { exportTutorListPdf } from "./components/exportTutorListPdf";
+import { FiDownload, FiSearch } from 'react-icons/fi'
+import { CiFilter, CiCalendar } from 'react-icons/ci'
+import { useTutorList } from './components/useTutorList'
+import { exportTutorListPdf } from './components/exportTutorListPdf'
+import { exportTutorListCsv } from './components/exportTutorListCsv'
 
 export const TutorListPage = () => {
+  const [exportFormat, setExportFormat] = useState<'pdf' | 'excel'>('pdf')
   const {
-    selectedFaculty, selectedTutor,
-    dateFrom, dateTo,
+    facultyId,
+    topicId,
+    keyword,
+    faculties,
+    topics,
+    dateFrom,
+    dateTo,
+    setFacultyId,
+    setTopicId,
+    setKeyword,
+    setDateFrom,
+    setDateTo,
     filteredData,
-    uniqueFaculties, uniqueTutors,
-    setSelectedFaculty, setSelectedTutor,
-    setDateFrom, setDateTo,
+    loading,
+    error,
     handleSearch,
     columns
-  } = useTutorList();
+  } = useTutorList()
+
+  const handleExport = () => {
+    if (exportFormat === 'pdf') {
+      exportTutorListPdf(filteredData)
+    } else {
+      exportTutorListCsv(filteredData)
+    }
+  }
 
   return (
     <MainLayout>
       <div className='p-4 md:p-8 bg-white shadow-2xl rounded-xl'>
         {/* FILTER BLOCK */}
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-8 items-end p-4 bg-gray-50 rounded-xl border border-gray-200">
-
-          {/* Faculty */}
+        <div className='grid grid-cols-2 md:grid-cols-7 gap-3 mb-8 items-end p-4 bg-gray-50 rounded-xl border border-gray-200'>
+          {/* Faculty Dropdown */}
           <div>
             <label className='block text-xs font-medium text-gray-700 mb-1'>Faculty</label>
             <select
-              value={selectedFaculty}
-              onChange={(e) => setSelectedFaculty(e.target.value)}
-              className='w-full px-3 py-2 border rounded-lg'
+              value={facultyId}
+              onChange={(e) => setFacultyId(e.target.value)}
+              className='w-full px-3 py-2 border rounded-lg text-sm'
             >
-              <option value=''>--- All Faculties ---</option>
-              {uniqueFaculties.map((f, i) => (
-                <option key={i} value={f}>{f}</option>
+              <option value=''>All Faculties</option>
+              {faculties.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.name}
+                </option>
               ))}
             </select>
           </div>
 
-          {/* Tutor */}
+          {/* Topic Dropdown */}
           <div>
-            <label className='block text-xs font-medium text-gray-700 mb-1'>Tutor</label>
+            <label className='block text-xs font-medium text-gray-700 mb-1'>Topic</label>
             <select
-              value={selectedTutor}
-              onChange={(e) => setSelectedTutor(e.target.value)}
-              className='w-full px-3 py-2 border rounded-lg'
+              value={topicId}
+              onChange={(e) => setTopicId(e.target.value)}
+              className='w-full px-3 py-2 border rounded-lg text-sm'
             >
-              <option value=''>--- All Tutors ---</option>
-              {uniqueTutors.map((t, i) => (
-                <option key={i} value={t}>{t}</option>
+              <option value=''>All Topics</option>
+              {topics.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
               ))}
             </select>
+          </div>
+
+          {/* Keyword Search */}
+          <div>
+            <label className='block text-xs font-medium text-gray-700 mb-1'>Search Keyword</label>
+            <input
+              type='text'
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              className='w-full px-3 py-2 border rounded-lg text-sm'
+              placeholder='Name or ID'
+            />
           </div>
 
           {/* Date From */}
           <div className='relative'>
             <label className='block text-xs font-medium text-gray-700 mb-1'>From</label>
-            <input type='date'
+            <input
+              type='date'
               value={dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
               className='w-full px-3 py-2 border rounded-lg pr-8'
@@ -68,7 +104,8 @@ export const TutorListPage = () => {
           {/* Date To */}
           <div className='relative'>
             <label className='block text-xs font-medium text-gray-700 mb-1'>To</label>
-            <input type='date'
+            <input
+              type='date'
               value={dateTo}
               onChange={(e) => setDateTo(e.target.value)}
               className='w-full px-3 py-2 border rounded-lg pr-8'
@@ -79,22 +116,34 @@ export const TutorListPage = () => {
           {/* Search Button */}
           <button
             onClick={handleSearch}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-700 px-4 py-2.5 text-white font-medium shadow-md hover:bg-indigo-800"
+            disabled={loading}
+            className='flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-700 px-4 py-2.5 text-white font-medium shadow-md hover:bg-indigo-800 disabled:opacity-60'
           >
             <FiSearch size={18} /> Search
           </button>
 
-         {/* Export */}
-          <div className="flex">
+          {/* Export Dropdown */}
+          <div className='flex gap-2'>
+            <select
+              value={exportFormat}
+              onChange={(e) => setExportFormat(e.target.value as 'pdf' | 'excel')}
+              className='px-3 py-2 border rounded-lg text-sm'
+            >
+              <option value='pdf'>PDF</option>
+              <option value='excel'>Excel</option>
+            </select>
             <button
-              onClick={() => exportTutorListPdf(filteredData)}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-white font-medium shadow-md hover:bg-green-700"
+              onClick={handleExport}
+              disabled={loading || filteredData.length === 0}
+              className='flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-white font-medium shadow-md hover:bg-green-700 disabled:opacity-60'
             >
               <FiDownload size={18} />
               <span>Export</span>
             </button>
           </div>
         </div>
+
+        {error && <div className='mb-4 rounded border border-red-200 bg-red-50 p-3 text-red-700'>{error}</div>}
 
         <div className='mb-4 flex items-center gap-3 text-lg font-semibold text-gray-700'>
           <CiFilter size={20} className='text-indigo-500' />
@@ -104,5 +153,5 @@ export const TutorListPage = () => {
         <Table columns={columns} data={filteredData} />
       </div>
     </MainLayout>
-  );
-};
+  )
+}
