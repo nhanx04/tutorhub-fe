@@ -1,108 +1,100 @@
-import { useMemo, useCallback, useState, useEffect } from "react";
-import type { StudentRow, TutorSummary } from "../mockdata/tutor-data";
-import { tutorDataa, TUTOR_ID_MAP } from "../mockdata/tutor-data";
-import { IoArrowForwardOutline } from "react-icons/io5";
-import type { Column } from "src/features/faculty/student-assessment/components/Table";
+import { useEffect, useMemo, useState } from 'react'
+import type { Column } from 'src/features/faculty/student-assessment/components/Table'
+import type { TutorStat } from 'src/types/ctsv'
+import { statisticsService } from 'src/services/statisticsService'
+import { facultyService } from 'src/services/facultyService'
+import { topicService } from 'src/services/topicService'
 
-const aggregateTutorData = (students: StudentRow[]): TutorSummary[] => {
-  type Temp = Omit<TutorSummary, 'faculties' | 'numFaculties'> & { faculties: Set<string> };
+interface Faculty {
+  id: number
+  name: string
+}
 
-  const tutorMap: Record<string, Temp> = {};
-
-  students.forEach((student) => {
-    const tutorName = student.tutor;
-    const tutorId = TUTOR_ID_MAP[tutorName] || 'TUNK';
-
-    if (!tutorMap[tutorName]) {
-      tutorMap[tutorName] = {
-        tutorId,
-        tutor: tutorName,
-        faculties: new Set(),
-        totalGroups: 1,
-        totalSessions: 3,
-        students: []
-      };
-    }
-
-    const entry = tutorMap[tutorName];
-    entry.faculties.add(student.faculty);
-    // entry.totalGroups += student.groups;
-    // entry.totalSessions += student.sessions;
-    entry.students.push(student);
-  });
-
-  return Object.values(tutorMap).map((tutor) => ({
-    ...tutor,
-    faculties: Array.from(tutor.faculties).join(', '),
-    numFaculties: tutor.faculties.size,
-  }));
-};
+interface Topic {
+  id: number
+  name: string
+}
 
 export const useTutorList = () => {
-  const baseTutorData = useMemo(() => aggregateTutorData(tutorDataa), []);
+  const [facultyId, setFacultyId] = useState('')
+  const [topicId, setTopicId] = useState('')
+  const [keyword, setKeyword] = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+  const [filteredData, setFilteredData] = useState<TutorStat[]>([])
+  const [faculties, setFaculties] = useState<Faculty[]>([])
+  const [topics, setTopics] = useState<Topic[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const [selectedFaculty, setSelectedFaculty] = useState('');
-  const [selectedTutor, setSelectedTutor] = useState('');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
-  const [filteredData, setFilteredData] = useState<TutorSummary[]>([]);
+  const handleSearch = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const params: any = {}
+      if (facultyId) params.facultyId = Number(facultyId)
+      if (topicId) params.topicId = Number(topicId)
+      if (dateFrom) params.startDate = dateFrom
+      if (dateTo) params.endDate = dateTo
+      let data = await statisticsService.getByTutor(params)
 
-  const uniqueFaculties = useMemo(
-    () => [...new Set(tutorDataa.map((i) => i.faculty))].sort(),
-    []
-  );
-  const uniqueTutors = useMemo(
-    () => [...new Set(tutorDataa.map((i) => i.tutor))].sort(),
-    []
-  );
+      // Filter by keyword if provided
+      if (keyword.trim()) {
+        const kw = keyword.toLowerCase()
+        data = data.filter((t) => t.userName.toLowerCase().includes(kw) || t.userId.toLowerCase().includes(kw))
+      }
 
-  const applyFilter = useCallback((faculty: string, tutor: string) => {
-    const result = baseTutorData.filter((item) => {
-      const facultyMatch = faculty === '' || item.faculties.includes(faculty);
-      const tutorMatch = tutor === '' || item.tutor === tutor;
-      return facultyMatch && tutorMatch;
-    });
-
-    setFilteredData(result);
-  }, [baseTutorData]);
+      setFilteredData(data)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to load tutor statistics')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    applyFilter('', '');
-  }, [applyFilter]);
+    const loadFacultiesAndTopics = async () => {
+      try {
+        const [facs, tops] = await Promise.all([facultyService.getAllFaculties(), topicService.getAllTopics()])
+        setFaculties(facs)
+        setTopics(tops)
+      } catch (e) {
+        console.error('Failed to load faculties/topics:', e)
+      }
+    }
+    void loadFacultiesAndTopics()
+    void handleSearch()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-  const handleSearch = () => {
-    applyFilter(selectedFaculty, selectedTutor);
-  };
-   const columns: Column<TutorSummary>[] = [
-    { header: 'Tutor ID', accessor: 'tutorId', width: '10%' },
-    { header: 'Tutor Name', accessor: 'tutor', width: '20%' },
-    { header: 'Faculties Taught', accessor: 'faculties', width: '35%' },
-    { header: 'Total Groups', accessor: 'totalGroups', width: '10%', textAlign: 'center' },
-    { header: 'Total Sessions', accessor: 'totalSessions', width: '15%', textAlign: 'center' },
-    {
-      header: 'View',
-      width: '10%',
-      textAlign: 'center',
-      render: (row) => (
-        <button className='flex items-center justify-center mx-auto gap-1 rounded-full bg-cyan-500 px-3 py-1.5 text-white shadow-md hover:bg-cyan-600 hover:scale-105'>
-          <IoArrowForwardOutline size={16} />
-        </button>
-      ),
-    },
-  ];
+  const columns: Column<TutorStat>[] = useMemo(
+    () => [
+      { header: 'User ID', accessor: 'userId', width: '12%' },
+      { header: 'Tutor Name', accessor: 'userName', width: '28%' },
+      { header: 'Faculty', accessor: 'facultyName', width: '28%' },
+      { header: 'Groups', accessor: 'groupCount', width: '16%', textAlign: 'center' },
+      { header: 'Consultations', accessor: 'consultationCount', width: '16%', textAlign: 'center' }
+    ],
+    []
+  )
+
   return {
-    filteredData,
-    uniqueFaculties,
-    uniqueTutors,
-    selectedFaculty,
-    selectedTutor,
+    facultyId,
+    topicId,
+    keyword,
+    faculties,
+    topics,
     dateFrom,
     dateTo,
-    setSelectedFaculty,
-    setSelectedTutor,
+    setFacultyId,
+    setTopicId,
+    setKeyword,
     setDateFrom,
     setDateTo,
+    filteredData,
+    loading,
+    error,
     handleSearch,
-    columns,
-  };
-};
+    columns
+  }
+}
