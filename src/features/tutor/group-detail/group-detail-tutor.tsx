@@ -17,7 +17,7 @@ const convertConsultationToSession = (consultation: Consultation): Session => {
     generalDetails: {
       topic: consultation.topic,
       description: consultation.description,
-      links: [consultation.locationLink]
+      links: []
     },
     timeAndLocation: {
       time: consultation.consultationTime,
@@ -44,31 +44,30 @@ export const GroupDetailTutorPage = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
+  const fetchGroupAndConsultations = async () => {
     if (!id) {
       setError('Group ID is missing.')
       setLoading(false)
       return
     }
+    try {
+      setLoading(true)
+      const groupData = await groupService.getGroupById(id)
+      setGroup(groupData)
 
-    const fetchGroupAndConsultations = async () => {
-      try {
-        setLoading(true)
-        const groupData = await groupService.getGroupById(id)
-        setGroup(groupData)
-
-        // Fetch consultations for this group
-        const consultationsData = await consultationService.getConsultationsByGroup(parseInt(id))
-        setConsultations(consultationsData)
-        setError(null)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch group details.')
-      } finally {
-        setLoading(false)
-      }
+      const consultationsData = await consultationService.getConsultationsByGroup(parseInt(id))
+      setConsultations(consultationsData)
+      setError(null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch group details.')
+    } finally {
+      setLoading(false)
     }
+  }
 
-    fetchGroupAndConsultations()
+  useEffect(() => {
+    void fetchGroupAndConsultations()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
   if (loading) {
@@ -94,7 +93,12 @@ export const GroupDetailTutorPage = () => {
           <GrCircleInformation size={26} className='mt-0.5' />
           <h1>Group Information</h1>
         </div>
-        <GroupInformation id={group.id} groupName={group.groupName} description={group.description} />
+        <GroupInformation
+          id={group.id}
+          groupName={group.groupName}
+          description={group.description}
+          onConsultationCreated={fetchGroupAndConsultations}
+        />
       </div>
 
       <div className='flex flex-col px-6'>

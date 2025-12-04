@@ -5,11 +5,17 @@ import { SiTicktick } from 'react-icons/si'
 import { consultationService } from 'src/services/consultationService'
 import { useParams } from 'react-router'
 
-interface CreateConsultationModalProps extends NewConsul {
+interface CreateConsultationModalProps {
+  onBack: () => void
+  onConsultationCreated: () => void
   groupId?: number
 }
 
-const CreateConsultationModal: React.FC<CreateConsultationModalProps> = ({ onBack, groupId }) => {
+const CreateConsultationModal: React.FC<CreateConsultationModalProps> = ({
+  onBack,
+  onConsultationCreated,
+  groupId
+}) => {
   const { id } = useParams<{ id: string }>()
   const [formData, setFormData] = useState({
     topic: '',
@@ -112,8 +118,7 @@ const CreateConsultationModal: React.FC<CreateConsultationModalProps> = ({ onBac
       }
 
       await consultationService.createConsultation(consultationData)
-      document.body.style.pointerEvents = 'auto'
-      onBack?.()
+      onConsultationCreated()
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to create consultation'
       setError(errorMessage)
