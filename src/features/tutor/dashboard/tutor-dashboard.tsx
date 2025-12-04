@@ -16,7 +16,7 @@ export const TutorDashboardPage = () => {
     const fetchGroups = async () => {
       try {
         setLoading(true)
-        const data = await groupService.getMyGroups()
+        const data = await groupService.getMyCreatedGroups()
         setGroups(data)
         setError(null)
       } catch (err) {
