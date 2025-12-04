@@ -32,7 +32,7 @@ export const BookDetailPage = () => {
   }, [id])
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href)
+    navigator.clipboard.writeText(`https://mybk.hcmut.edu.vn/bookstore/product/${id}`)
     alert('Link copied to clipboard!')
   }
 
