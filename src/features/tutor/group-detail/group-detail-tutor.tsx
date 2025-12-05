@@ -111,24 +111,20 @@ export const GroupDetailTutorPage = () => {
       <div className='bg-white mx-6 border border-gray-300 shadow-sm'>
         {/* Header */}
         <div className='flex items-center text-sm lg:text-base gap-4 bg-gray-200 px-5 py-3 border-b border-gray-300'>
-          <div className='flex gap-10 w-[40%] min-w-[300px]'>
+          <div className='flex gap-10 w-[50%] min-w-[300px]'>
             <h1 className='w-12 font-semibold flex-shrink-0'>Con.ID</h1>
             <h1 className='flex-1 font-semibold'>General Details</h1>
           </div>
 
-          <div className='w-[20%] min-w-[150px] text-center'>
+          <div className='w-[22%] min-w-[150px] text-center'>
             <h1 className='font-semibold'>Time & Location</h1>
-          </div>
-
-          <div className='w-[15%] min-w-[100px] text-center'>
-            <h1 className='font-semibold'>Students</h1>
           </div>
 
           <div className='w-[12%] min-w-[80px] text-center'>
             <h1 className='font-semibold'>Status</h1>
           </div>
 
-          <div className='w-[13%] min-w-[90px] text-center'>
+          <div className='w-[16%] min-w-[90px] text-center'>
             <h1 className='font-semibold'>Actions</h1>
           </div>
         </div>

@@ -32,7 +32,7 @@ const mockStudents = [
 
 export const ConsultationCard: React.FC<ConsulCardProps> = ({ session, groupId }) => {
   const navigate = useNavigate()
-  const { sid, generalDetails, timeAndLocation, students, status } = session
+  const { sid, generalDetails, timeAndLocation, status } = session
   const [showCancel, setShowCancel] = useState(false)
   const [showFeedback, setShowFeedback] = useState(false)
   const [isStudentListOpen, setStudentListOpen] = useState(false)
@@ -100,7 +100,7 @@ export const ConsultationCard: React.FC<ConsulCardProps> = ({ session, groupId }
       <div className='bg-white px-5 py-5 border-b border-gray-300'>
         <div className='flex items-start text-sm lg:text-base gap-4'>
           {/* sid và thông tin sơ bộ */}
-          <div className='flex gap-10 w-[40%] min-w-[300px]'>
+          <div className='flex gap-10 w-[50%] min-w-[300px]'>
             <p className='w-12 flex-shrink-0'>#{sid}</p>
 
             <div className='flex-1'>
@@ -125,7 +125,7 @@ export const ConsultationCard: React.FC<ConsulCardProps> = ({ session, groupId }
           </div>
 
           {/* thời gian địa điểm */}
-          <div className='flex flex-col gap-2 items-center justify-start w-[20%] min-w-[150px] text-center'>
+          <div className='flex flex-col gap-2 items-center justify-start w-[22%] min-w-[150px] text-center'>
             <p className='text-sm'>
               {Array.isArray(timeAndLocation.time) ? timeAndLocation.time.join(', ') : timeAndLocation.time}
             </p>
@@ -143,18 +143,13 @@ export const ConsultationCard: React.FC<ConsulCardProps> = ({ session, groupId }
             )}
           </div>
 
-          {/* số lượng */}
-          <div className='flex items-center justify-center w-[15%] min-w-[100px] text-center'>
-            <p className='text-sm'>{students}</p>
-          </div>
-
           {/* trạng thái */}
           <div className='flex items-center justify-center w-[12%] min-w-[80px] text-center'>
             <p className={`text-xs w-25 py-1 rounded-md text-black ${statusColors[status] || ''}`}>{status}</p>
           </div>
 
           {/* các hành động */}
-          <div className='flex items-center justify-center w-[13%] min-w-[90px] text-center text-white text-base'>
+          <div className='flex items-center justify-center w-[16%] min-w-[90px] text-center text-white text-base'>
             {status === 'Completed' && (
               <button
                 onClick={handleFeedback}
