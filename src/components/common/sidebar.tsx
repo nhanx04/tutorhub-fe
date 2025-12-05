@@ -1,5 +1,5 @@
 import React from 'react'
-import { FaHome, FaUserCog, FaBook, FaSearch } from 'react-icons/fa'
+import { FaHome, FaUserCog, FaBook, FaSearch, FaSignOutAlt } from 'react-icons/fa'
 import logo from '../../asset/images/TutorHub_favicon.png'
 import { useNavigate, useLocation } from 'react-router'
 import { useAuth } from 'src/hooks'
@@ -12,7 +12,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = () => {
   const nevigate = useNavigate()
   const location = useLocation()
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const currentPath = location.pathname
 
   const handleNevigate = (path: string) => {
@@ -122,6 +122,25 @@ const Sidebar: React.FC<SidebarProps> = () => {
           )
         })}
       </nav>
+
+      {/* Logout button */}
+      <div className='px-6 py-4 border-t border-gray-200'>
+        <button
+          onClick={() => {
+            try {
+              logout()
+            } catch (e) {
+              // ignore
+            } finally {
+              nevigate('/login')
+            }
+          }}
+          className='w-full flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors cursor-pointer'
+        >
+          <FaSignOutAlt />
+          <span className='font-medium'>Log out</span>
+        </button>
+      </div>
     </aside>
   )
 }

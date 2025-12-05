@@ -254,7 +254,7 @@ export const ConsultationSessionsPage: React.FC = () => {
       {
         header: 'General Details',
         accessor: 'generalDetails' as keyof ConsultationSession,
-        width: '32%',
+        width: '40%',
         render: (row: ConsultationSession) => (
           <div>
             <p className='font-semibold text-gray-800'>{row.generalDetails.title}</p>
@@ -293,9 +293,9 @@ export const ConsultationSessionsPage: React.FC = () => {
       {
         header: 'Time & Location',
         accessor: 'timeAndLocation' as keyof ConsultationSession,
-        width: '20%',
+        width: '22%',
         render: (row: ConsultationSession) => (
-          <div className='text-sm text-gray-700'>
+          <div className='text-sm text-gray-700 text-center'>
             <p>{row.timeAndLocation.date}</p>
             <p>{row.timeAndLocation.time}</p>
             {row.timeAndLocation.location && <p>{row.timeAndLocation.location}</p>}
@@ -312,24 +312,7 @@ export const ConsultationSessionsPage: React.FC = () => {
           </div>
         )
       },
-      {
-        header: 'Capacity',
-        accessor: 'capacity' as keyof ConsultationSession,
-        width: '12%',
-        render: (row: ConsultationSession) => {
-          const available = row.capacity.total - row.capacity.registered
-          return (
-            <div className='text-sm text-gray-700'>
-              <p>
-                {row.capacity.registered}/{row.capacity.total}
-              </p>
-              <p className='text-xs text-gray-500'>
-                {available > 0 ? `${available} seats left` : 'No seats available'}
-              </p>
-            </div>
-          )
-        }
-      },
+
       {
         header: 'Status',
         accessor: 'status' as keyof ConsultationSession,
@@ -341,7 +324,7 @@ export const ConsultationSessionsPage: React.FC = () => {
       {
         header: 'Actions',
         accessor: 'id' as keyof ConsultationSession,
-        width: '16%',
+        width: '18%',
         render: (row: ConsultationSession) => (
           <ActionButtons session={row} onRegister={openRegister} onCancel={openCancel} onFeedback={openFeedback} />
         )
